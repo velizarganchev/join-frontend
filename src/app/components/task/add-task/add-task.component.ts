@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { MultiSelectDropdownComponent } from "../../shared/multi-select-dropdown/multi-select-dropdown.component";
-import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ClickStopPropagationDirective } from '../../shared/click-stop-propagation.directive';
 import { __values } from 'tslib';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-add-task',
@@ -13,9 +14,10 @@ import { __values } from 'tslib';
 })
 export class AddTaskComponent implements OnInit {
   name = 'Angular';
-  bgColor = '';
+  bgColor = 'orange';
   isPrioSelected = false;
   showAddSubtaskIcons = false;
+  subtaskInput = '';
   members: any[] = [];
 
   taskForm!: FormGroup;
@@ -56,6 +58,7 @@ export class AddTaskComponent implements OnInit {
   }
 
   onAddSubtask() {
+    console.log(this.subtaskInput);
 
   }
 
@@ -67,7 +70,7 @@ export class AddTaskComponent implements OnInit {
   private initForm() {
 
     let title = '';
-    let category = '';
+    let category = 'user_story';
     let description = '';
     let status = '';
     let color = '';

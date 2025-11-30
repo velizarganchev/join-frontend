@@ -2,7 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 import { ErrorService } from '../../components/shared/error.service';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment.prod';
 
 import { Member } from '../../models/member';
 import { catchError, tap, throwError } from 'rxjs';
@@ -31,7 +31,7 @@ export class ContactsService {
 
   private fetchAllContacts() {
     return this.http
-      .get<Member[]>(`${environment.baseUrl}/all-contacts/`, {
+      .get<Member[]>(`${environment.baseUrl}/contacts/`, {
         headers: this.httpHeaders,
       })
       .pipe(

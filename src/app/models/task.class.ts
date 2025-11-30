@@ -14,6 +14,7 @@ export class Task {
     due_date: string;
     checked: boolean;
     subtasks: Subtask[];
+    subtasks_progress: number;
 
     constructor(obj?: any) {
         this.id = obj?.id ?? null;
@@ -23,27 +24,11 @@ export class Task {
         this.status = obj?.status ?? '';
         this.color = obj?.color ?? '';
         this.priority = obj?.priority ?? '';
-        this.members = obj?.members ? obj.members.map((m: any) => new Member(m)) : [];
+        this.members = Array.isArray(obj?.members) ? obj.members.map((m: any) => new Member(m)) : [];
         this.created_at = obj?.created_at ?? new Date().toISOString();
         this.due_date = obj?.due_date ?? new Date().toISOString();
         this.checked = obj?.checked ?? false;
-        this.subtasks = obj?.subtasks ? obj.subtasks.map((s: any) => new Subtask(s)) : [];
+        this.subtasks = Array.isArray(obj?.subtasks) ? obj.subtasks.map((s: any) => new Subtask(s)) : [];
+        this.subtasks_progress = obj?.subtasks_progress ?? 0;
     }
-
-    // toJson() {
-    //     return {
-    //         id: this.id,
-    //         title: this.title,
-    //         category: this.category,
-    //         description: this.description,
-    //         status: this.status,
-    //         color: this.color,
-    //         priority: this.priority,
-    //         members: this.members.map(m => m.toJson()),
-    //         created_at: this.created_at,
-    //         due_date: this.due_date,
-    //         checked: this.checked,
-    //         subtasks: this.subtasks.map(s => s.toJson())
-    //     };
-    // }
 }

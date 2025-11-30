@@ -71,8 +71,7 @@
           <div class="subtask-headline">Subtasks</div>
           <div class="subtask-content">
             <div class="subtask-input">
-              <input autocomplete="off" name="subtask-input" placeholder="Add new subtask"
-                (click)="onTogleSubtaskIcons()" />
+              <input autocomplete="off" placeholder="Add new subtask" (click)="onTogleSubtaskIcons()" />
               <div class="subtasks-imgages-container">
                 @if (!showAddSubtaskIcons) {
                 <div class="subtask-img">
@@ -93,10 +92,10 @@
                 <li class="subtask-list-item">
                   <span>SubtaskTitle</span>
                   <div class="subtask-list-item-actions-container">
-                    <button class="subtask-edit-btn-container">
+                    <button type="button" class="subtask-edit-btn-container">
                       <img src="assets/img/edit-contact.png" alt="Edit">
                     </button>
-                    <button class="subtask-delete-btn-container">
+                    <button type="button" class="subtask-delete-btn-container">
                       <img src="assets/img/delete-contact.png" alt="Delete">
                     </button>
                   </div>

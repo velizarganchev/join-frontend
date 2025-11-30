@@ -43,10 +43,10 @@ export class MultiSelectDropdownComponent implements OnInit {
       next: (contacts) => {
         this.contacts = contacts.map((member) => ({
           id: member.id,
-          firstName: member.first_name,
-          lastName: member.last_name,
+          firstName: member.user.first_name,
+          lastName: member.user.last_name,
           color: member.color,
-          fullName: `${member.first_name} ${member.last_name}`,
+          fullName: `${member.user.first_name} ${member.user.last_name}`,
           checked: false
         }));
       },

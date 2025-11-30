@@ -13,11 +13,12 @@
                 <ul class="contacts">
                     @for (contact of members()[key]; track $index) {
                     <li class="contact" (click)="onSelectContact(contact)">
-                        <div class="badge" [style.background-color]="contact.color">{{ contact.first_name.charAt(0) }}{{
-                            contact.last_name.charAt(0) }}</div>
+                        <div class="badge" [style.background-color]="contact.color">{{ contact.user.first_name.charAt(0)
+                            }}{{
+                            contact.user.last_name.charAt(0) }}</div>
                         <div class="name-container">
-                            <p class="name">{{ contact.first_name }} {{ contact.last_name }}</p>
-                            <p class="email">{{ contact.email }}</p>
+                            <p class="name">{{ contact.user.first_name }} {{ contact.user.last_name }}</p>
+                            <p class="email">{{ contact.user.email }}</p>
                         </div>
                     </li>
                     }
@@ -37,16 +38,17 @@
         <div class="contact-info-container">
             <div class="contact-info-headline">
                 <div class="headline-badge" [style.background-color]="selectedContact.color">{{
-                    selectedContact.first_name.charAt(0) }}{{
-                    selectedContact.last_name.charAt(0) }}</div>
+                    selectedContact.user.first_name.charAt(0) }}{{
+                    selectedContact.user.last_name.charAt(0) }}</div>
                 <div class="headline-name-container">
-                    <p class="headline-name">{{ selectedContact.first_name }} {{ selectedContact.last_name }}</p>
+                    <p class="headline-name">{{ selectedContact.user.first_name }} {{ selectedContact.user.last_name }}
+                    </p>
                 </div>
             </div>
             <div class="subheadline">Contact Information</div>
             <div class="contact-info-email">
                 <p class="info-email-title">Email</p>
-                <p class="info-email">{{ selectedContact.email }}</p>
+                <p class="info-email">{{ selectedContact.user.email }}</p>
             </div>
             <div class="contact-info-phone">
                 <p class="info-phone-title">Phone</p>

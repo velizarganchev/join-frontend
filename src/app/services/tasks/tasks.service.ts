@@ -29,7 +29,7 @@ export class TasksService {
 
   private fetchAllTasks() {
     return this.http
-      .get<Task[]>(`${environment.baseUrl}/all-tasks/`, {
+      .get<Task[]>(`${environment.baseUrl}/tasks/`, {
         headers: this.httpHeaders,
       })
       .pipe(
@@ -44,7 +44,7 @@ export class TasksService {
       );
   }
 
-  getSingleTask(taskId: number) {}
+  getSingleTask(taskId: number) { }
 
   addTask(taskData: Task) {
     return this.storeTask(taskData).pipe(
@@ -69,7 +69,7 @@ export class TasksService {
     const prevTasks = this.tasks() || [];
 
     return this.http
-      .post<Task>(`${environment.baseUrl}/single-task/`, newTask, {
+      .post<Task>(`${environment.baseUrl}/tasks/`, newTask, {
         headers: this.httpHeaders,
       })
       .pipe(
@@ -99,7 +99,7 @@ export class TasksService {
 
   private update(task: Task) {
     return this.http
-      .put<Task[]>(`${environment.baseUrl}/single-task/${task.id}/`, task, {
+      .put<Task[]>(`${environment.baseUrl}/tasks/${task.id}/`, task, {
         headers: this.httpHeaders,
       })
       .pipe(
@@ -122,7 +122,7 @@ export class TasksService {
 
   private delete(id: number) {
     return this.http
-      .post<Task[]>(`${environment.baseUrl}/single-task/${id}/`, {
+      .post<Task[]>(`${environment.baseUrl}/tasks/${id}/`, {
         headers: this.httpHeaders,
       })
       .pipe(

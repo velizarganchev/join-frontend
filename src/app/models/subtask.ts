@@ -3,21 +3,11 @@ import { Task } from "./task.class";
 export class Subtask {
     id: number;
     title: string;
-    status: string;
-    task: Task | null;
+    status: boolean;
 
     constructor(obj?: any) {
         this.id = obj?.id ?? null;
         this.title = obj?.title ?? '';
-        this.status = obj?.status ?? '';
-        this.task = obj?.task ?? null;
+        this.status = obj?.status ?? false;
     }
-
-    // toJson() {
-    //     return {
-    //         id: this.id,
-    //         title: this.title,
-    //         status: this.status,
-    //     };
-    // }
 }
