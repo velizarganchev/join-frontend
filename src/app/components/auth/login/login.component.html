@@ -2,44 +2,40 @@
   <span>Not a Join user?</span>
   <a class="dark-button" routerLink="/sign-up">Sign up</a>
 </div>
+
 <div id="form-wrapper">
   <div class="log-in-box">
     <h1>Log in</h1>
     <div class="log-in-border"></div>
+
+    <!-- Глобално съобщение за грешка -->
+    <p *ngIf="errorMessage()" class="error-message">
+      {{ errorMessage() }}
+    </p>
+
     <form id="log-in-form" #loginForm="ngForm" (ngSubmit)="onLogin(loginForm)">
       <div class="input-wrapper">
-        <input
-          [(ngModel)]="loginData.username"
-          name="username"
-          type="text"
-          required
-          placeholder="Name"
-          autofocus
-        />
+        <input [(ngModel)]="loginData.email" name="email" type="email" email required placeholder="Email" autofocus />
         <img id="email-image" src="/assets/img/email-icon.png" />
       </div>
+
       <div class="input-wrapper">
-        <input
-          [(ngModel)]="loginData.password"
-          name="password"
-          type="password"
-          id="password"
-          required
-          placeholder="Password"
-        />
-        <img
-          id="password-image"
-          src="/assets/img/password-icon.png"
-          onclick="togglePasswordVisibility()"
-        />
+        <input [(ngModel)]="loginData.password" name="password" [type]="passwordVisible() ? 'text' : 'password'"
+          id="password" required placeholder="Password" />
+        <img id="password-image" src="/assets/img/password-icon.png" (click)="togglePasswordVisibility()" />
       </div>
+
       <div class="remember-me-box">
         <input type="checkbox" id="remember-me" />
         <span>Remember me</span>
       </div>
+
       <div class="entry-buttons">
-        <button class="dark-button" type="submit">Log in</button>
-        <button class="light-button" onclick="setUpGuestLogIn()">
+        <button class="dark-button" type="submit" [disabled]="loginForm.invalid || isSubmitting()">
+          {{ isSubmitting() ? 'Logging in...' : 'Log in' }}
+        </button>
+
+        <button class="light-button" type="button" (click)="onGuestLogin()">
           Guest Log in
         </button>
       </div>

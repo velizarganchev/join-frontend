@@ -15,10 +15,6 @@ export class TasksService {
   http = inject(HttpClient);
   errorService = inject(ErrorService);
 
-  httpHeaders: HttpHeaders = new HttpHeaders({
-    Authorization: `Token ${environment.baseToken}`,
-  });
-
   loadAllTasks() {
     return this.fetchAllTasks().pipe(
       tap({
@@ -29,9 +25,7 @@ export class TasksService {
 
   private fetchAllTasks() {
     return this.http
-      .get<Task[]>(`${environment.baseUrl}/tasks/`, {
-        headers: this.httpHeaders,
-      })
+      .get<Task[]>(`${environment.baseUrl}/tasks/`)
       .pipe(
         catchError((error) => {
           this.errorService.showError(
@@ -69,9 +63,7 @@ export class TasksService {
     const prevTasks = this.tasks() || [];
 
     return this.http
-      .post<Task>(`${environment.baseUrl}/tasks/`, newTask, {
-        headers: this.httpHeaders,
-      })
+      .post<Task>(`${environment.baseUrl}/tasks/`, newTask)
       .pipe(
         catchError((error) => {
           this.errorService.showError('Something went wrong store the Task');
@@ -99,9 +91,7 @@ export class TasksService {
 
   private update(task: Task) {
     return this.http
-      .put<Task[]>(`${environment.baseUrl}/tasks/${task.id}/`, task, {
-        headers: this.httpHeaders,
-      })
+      .put<Task[]>(`${environment.baseUrl}/tasks/${task.id}/`, task)
       .pipe(
         catchError((error) => {
           this.errorService.showError('Something went wrong update the Task');
@@ -115,16 +105,13 @@ export class TasksService {
   deleteTask(taskId: number) {
     return this.delete(taskId).pipe(
       tap({
-        next: (res) => this.tasks.set(res),
       })
     );
   }
 
   private delete(id: number) {
     return this.http
-      .post<Task[]>(`${environment.baseUrl}/tasks/${id}/`, {
-        headers: this.httpHeaders,
-      })
+      .delete<void>(`${environment.baseUrl}/tasks/${id}/`)
       .pipe(
         catchError((error) => {
           this.errorService.showError('Something went wrong delete the Task');

@@ -3,11 +3,11 @@
   <a href="#"><img id="responsiveJoinLogoDark" src="/assets/img/join-logo-dark-responsive.png" alt="join logo" /></a>
   <div class="header-icons">
     <a id="help" class="scale-on-hover" href="#"><img src="/assets/img/question-mark-icon.png" /></a>
-    <img class="scale-on-hover" src="/assets/img/guest-profile-icon.png" (click)="ToggleMenu()" />
+    <img class="scale-on-hover" src="/assets/img/guest-profile-icon.png" (click)="toggleMenu()" />
   </div>
 </header>
 
-<div *ngIf="showHideMenu" id="profile-nav-wrapper" (click)="ToggleMenu()">
+<div *ngIf="showHideMenu()" id="profile-nav-wrapper" (click)="toggleMenu()">
   <div class="profile-nav">
     <a href="#">Legal notice</a> <br>
     <a href="#">Privacy policy</a> <br>

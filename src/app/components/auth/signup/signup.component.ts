@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
-import { UsersService } from '../users.service';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+
+import { AuthService } from '../auth.service';
+import { RegisterRequest, RegisterResponse, SignupFormData } from '../../../models/auth';
 
 @Component({
   selector: 'app-signup',
@@ -12,41 +14,76 @@ import { Router } from '@angular/router';
   styleUrl: './signup.component.scss'
 })
 export class SignupComponent {
+  private auth = inject(AuthService);
+  router = inject(Router);
 
-  signUpData = {
-    action: 'register',
-    username: '',
+  signupData: SignupFormData = {
     email: '',
+    username: '',
     password: '',
     confirmPassword: '',
-    privacyPolicy: false
+    privacyPolicy: false,
   };
 
-  constructor(private us: UsersService, private router: Router) { }
+  errorMessage = signal<string | null>(null);
+  isSubmitting = signal(false);
+  passwordVisible = signal(false);
+  confirmPasswordVisible = signal(false);
 
-  async onSignUp(ngForm: NgForm) {
-    if (ngForm.valid && this.signUpData.password === this.signUpData.confirmPassword) {
-      try {
-        const res: {
-          user_id: number,
-          username: string,
-          email: string,
-          token: string
-        } =
-          await this.us.SignInSignUpWithUsernameAndPassword(this.signUpData);
-        localStorage.setItem('AuthToken', res.token);
-        console.log(res);
-        this.router.navigate(['/login']);
-        ngForm.resetForm();
-      } catch (error) {
-        this.handleError(error);
-      }
-    } else {
-      console.log('Form is invalid or passwords do not match.');
+  onSignUp(ngForm: NgForm) {
+    this.errorMessage.set(null);
+
+    if (ngForm.invalid) {
+      ngForm.control.markAllAsTouched();
+      return;
     }
+
+    if (this.signupData.password !== this.signupData.confirmPassword) {
+      this.errorMessage.set("Ups! Your password doesn't match.");
+      return;
+    }
+
+    if (!this.signupData.privacyPolicy) {
+      this.errorMessage.set('Please accept the Privacy Policy to continue.');
+      return;
+    }
+
+    this.isSubmitting.set(true);
+    const { email, username, password } = this.signupData;
+
+    const first_name = username ? username.charAt(0).toUpperCase() + username.slice(1)
+      : undefined;
+
+    const payload: RegisterRequest = {
+      email,
+      username,
+      first_name,
+      password,
+      color: '#1976d2',
+    };
+
+    this.auth.register(payload).subscribe({
+      next: (response: RegisterResponse) => {
+        this.isSubmitting.set(false);
+        this.router.navigate(['/login']);
+      },
+      error: (error) => {
+        this.isSubmitting.set(false);
+        this.errorMessage.set('Registration failed. Please check your details and try again.');
+        console.error('Registration error:', error);
+      }
+    });
   }
-  private handleError(error: any) {
-    console.error('An error occurred during login:', error);
-    // alert('Login failed. Please check your credentials and try again.');
+
+  togglePasswordVisibility() {
+    this.passwordVisible.update((v) => !v);
+  }
+
+  toggleConfirmPasswordVisibility() {
+    this.confirmPasswordVisible.update(v => !v);
+  }
+
+  goBackToLogin() {
+    this.router.navigate(['/login']);
   }
 }

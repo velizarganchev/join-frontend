@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { UsersService } from '../../../auth/users.service';
+import { Component, inject, signal } from '@angular/core';
+
 import { Router } from '@angular/router';
+import { AuthService } from '../../../auth/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -11,24 +12,28 @@ import { Router } from '@angular/router';
   styleUrl: './header.component.scss'
 })
 export class HeaderComponent {
-  showHideMenu = false;
 
-  constructor(private us: UsersService, private router: Router) { }
+  showHideMenu = signal(false);
+  auth = inject(AuthService);
+  router = inject(Router);
 
-  ToggleMenu() {
-    this.showHideMenu = !this.showHideMenu;
+  toggleMenu() {
+    this.showHideMenu.update(value => !value);
   }
 
   onLogout() {
-    this.us.Logout().subscribe({
-      next: (response) => {
-        console.log('Logout erfolgreich:', response);
-        localStorage.removeItem('AuthToken');
+    this.auth.logout().subscribe({
+      next: () => {
         this.router.navigate(['/login']);
       },
-      error: (error) => {
-        console.error('Logout fehlgeschlagen:', error);
+      error: (err) => {
+        if (err?.status === 401) {
+          this.router.navigate(['/login']);
+          return;
+        }
+        console.error('Logout failed', err);
+        this.router.navigate(['/login']);
       }
-    })
+    });
   }
 }

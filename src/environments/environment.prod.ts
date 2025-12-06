@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  baseUrl: 'http://',
+  baseUrl: 'https://join-api.velizar-ganchev-backend.com/api/',
 };

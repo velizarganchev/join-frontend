@@ -1,50 +1,75 @@
 <div id="form-wrapper">
     <div class="sign-up-box">
-        <button class="arrow-left scale-on-hover">
+        <button class="arrow-left scale-on-hover" type="button" (click)="goBackToLogin()">
             <img src="/assets/img/arrow-left-line.png" />
         </button>
+
         <h1>Sign up</h1>
         <div class="headline-border"></div>
+
+        <!-- Глобално съобщение за грешка -->
+        <p *ngIf="errorMessage()" class="error-message">
+            {{ errorMessage() }}
+        </p>
+
         <form id="sign-up-form" #signUpForm="ngForm" (ngSubmit)="onSignUp(signUpForm)">
             <div class="input-wrapper">
-                <input [(ngModel)]="signUpData.username" name="username" type="text" id="name" required
+                <input [(ngModel)]="signupData.username" name="username" type="text" id="name" required
                     placeholder="Name" autofocus />
                 <img class="name-icon" src="/assets/img/name-icon.png" />
             </div>
+
             <div class="input-wrapper">
-                <input [(ngModel)]="signUpData.email" name="email" type="email" id="email" required
+                <input [(ngModel)]="signupData.email" email name="email" type="email" id="email" required
                     placeholder="Email" />
                 <img class="email-icon" src="/assets/img/email-icon.png" />
             </div>
+
             <div class="input-wrapper">
-                <input [(ngModel)]="signUpData.password" name="password" type="password" id="password" required
-                    placeholder="Password" minlength="6" autocomplete="new-password" />
-                <img class="password-icon" src="/assets/img/password-icon.png" />
+                <input [(ngModel)]="signupData.password" name="password"
+                    [type]="passwordVisible() ? 'text' : 'password'" id="password" required placeholder="Password"
+                    minlength="6" autocomplete="new-password" />
+                <img class="password-icon" src="/assets/img/password-icon.png" (click)="togglePasswordVisibility()" />
             </div>
+
             <div class="input-wrapper">
-                <input [(ngModel)]="signUpData.confirmPassword" name="confirmPassword" type="password"
-                    id="confirm-password" required placeholder="Confirm password" />
-                <img class="confirm-password-icon" src="/assets/img/password-icon.png" />
+                <input [(ngModel)]="signupData.confirmPassword" name="confirmPassword"
+                    [type]="confirmPasswordVisible() ? 'text' : 'password'" id="confirm-password" required
+                    placeholder="Confirm password" />
+                <img class="confirm-password-icon" src="/assets/img/password-icon.png"
+                    (click)="toggleConfirmPasswordVisibility()" />
             </div>
-            <p id="password-message" *ngIf="signUpForm.submitted && signUpData.password !== signUpData.confirmPassword"
-                class="error-message">
+
+            <p id="password-message" *ngIf="
+          signUpForm.submitted &&
+          signupData.password &&
+          signupData.confirmPassword &&
+          signupData.password !== signupData.confirmPassword
+        " class="error-message">
                 Ups! Your password doesn't match.
             </p>
+
             <div class="privacy-policy-box">
-                <input [(ngModel)]="signUpData.privacyPolicy" name="privacyPolicy" type="checkbox"
+                <input [(ngModel)]="signupData.privacyPolicy" name="privacyPolicy" type="checkbox"
                     id="privacy-policy-checkbox" required />
                 <span>I accept the</span>
-                <a class="scale-on-hover" href="privacy_policy.html">Privacy Policy</a>
+                <a class="scale-on-hover" href="privacy_policy.html">
+                    Privacy Policy
+                </a>
             </div>
+
             <div class="entry-buttons">
-                <button id="sign-up-button" class="dark-button" [ngClass]="!signUpForm.valid ? 'disabled-button' : ''"
-                    type="submit" [disabled]="!signUpForm.valid">
-                    Sign up
+                <button id="sign-up-button" class="dark-button" type="submit"
+                    [disabled]="!signUpForm.valid || isSubmitting()" [ngClass]="{
+            'disabled-button': !signUpForm.valid || isSubmitting()
+          }">
+                    {{ isSubmitting() ? 'Signing up...' : 'Sign up' }}
                 </button>
             </div>
         </form>
     </div>
 </div>
+
 <div id="confirmation-wrapper"></div>
 <p id="sign-up-confirmation" class="confirmation-message">
     You signed up successfully

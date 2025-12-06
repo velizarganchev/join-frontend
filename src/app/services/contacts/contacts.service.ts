@@ -17,10 +17,6 @@ export class ContactsService {
   http = inject(HttpClient);
   errorService = inject(ErrorService);
 
-  httpHeaders: HttpHeaders = new HttpHeaders({
-    Authorization: `Token ${environment.baseToken}`,
-  });
-
   loadAllContacts() {
     return this.fetchAllContacts().pipe(
       tap({
@@ -31,9 +27,7 @@ export class ContactsService {
 
   private fetchAllContacts() {
     return this.http
-      .get<Member[]>(`${environment.baseUrl}/contacts/`, {
-        headers: this.httpHeaders,
-      })
+      .get<Member[]>(`${environment.baseUrl}/contacts/`)
       .pipe(
         catchError((error) => {
           this.errorService.showError(
