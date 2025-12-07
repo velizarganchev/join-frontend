@@ -13,7 +13,7 @@
                         <img src="/assets/img/to-do-icon-white.png">
                     </div>
                     <div class="summary-top-item-content">
-                        <h4>7</h4>
+                        <h4>{{ todoCount() }}</h4>
                         <h5>To-do</h5>
                     </div>
                 </a>
@@ -22,7 +22,7 @@
                         <img src="/assets/img/hook-icon-white.png">
                     </div>
                     <div class="summary-top-item-content">
-                        <h4>3</h4>
+                        <h4>{{ doneCount() }}</h4>
                         <h5>Done</h5>
                     </div>
                 </a>
@@ -33,34 +33,34 @@
                         <img src="/assets/img/PrioHighWhite.png">
                     </div>
                     <div class="upcoming-task-container">
-                        <h4 id="upcoming-tasks-amount">1</h4>
-                        <h5 id="upcoming-prio">Medium</h5>
+                        <h4 id="upcoming-tasks-amount">{{ upcomingTask() ? 1 : 0 }}</h4>
+                        <h5 id="upcoming-prio">{{ upcomingPriorityLabel() }}</h5>
                     </div>
                 </div>
                 <div class="upcoming-task-seperator"></div>
                 <div class="upcoming-task-deadline">
-                    <h4>27 April, 2024</h4>
+                    <h4>{{ upcomingTask()?.due_date | date: 'd MMMM, y' }}</h4>
                     <h5>Upcoming deadline</h5>
                 </div>
             </a>
             <div class="summary-bottom">
                 <a href="#">
-                    <h4 id="tasks-amount">13</h4>
+                    <h4 id="tasks-amount">{{ totalCount() }}</h4>
                     <h5>Tasks in <br> board</h5>
                 </a>
                 <a href="#">
-                    <h4 id="in-progress-amount">10</h4>
+                    <h4 id="in-progress-amount">{{ inProgressCount() }}</h4>
                     <h5>Tasks in <br> progress</h5>
                 </a>
                 <a href="#">
-                    <h4 id="awaiting-feedback-amount">4</h4>
+                    <h4 id="awaiting-feedback-amount">{{ awaitingCount() }}</h4>
                     <h5>Awaiting <br> feedback</h5>
                 </a>
             </div>
         </div>
         <div class="summary-welcome-container">
             <p class="welcome">Good evening,</p>
-            <p class="welcome-name">GUEST</p>
+            <p class="welcome-name">{{ getWelcomeUsername() }}</p>
         </div>
     </div>
 </div>

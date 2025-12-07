@@ -1,34 +1,22 @@
-import { Member } from "./member";
-import { Subtask } from "./subtask";
+import { Member } from './member';
+import { Subtask } from './subtask';
 
-export class Task {
-    id: number;
+export type TaskCategory = 'user_story' | 'technical_task';
+export type TaskStatus = 'todo' | 'in_progress' | 'await_feedback' | 'done';
+export type TaskPriority = 'low' | 'medium' | 'high';
+
+export interface Task {
+    id?: number;
     title: string;
-    category: string;
+    category: TaskCategory;
     description: string;
-    status: string;
+    status: TaskStatus;
     color: string;
-    priority: string;
+    priority: TaskPriority;
     members: Member[];
-    created_at: string;
-    due_date: string;
+    created_at?: string;
+    due_date: string;     // 'YYYY-MM-DD'
     checked: boolean;
     subtasks: Subtask[];
     subtasks_progress: number;
-
-    constructor(obj?: any) {
-        this.id = obj?.id ?? null;
-        this.title = obj?.title ?? '';
-        this.category = obj?.category ?? '';
-        this.description = obj?.description ?? '';
-        this.status = obj?.status ?? '';
-        this.color = obj?.color ?? '';
-        this.priority = obj?.priority ?? '';
-        this.members = Array.isArray(obj?.members) ? obj.members.map((m: any) => new Member(m)) : [];
-        this.created_at = obj?.created_at ?? new Date().toISOString();
-        this.due_date = obj?.due_date ?? new Date().toISOString();
-        this.checked = obj?.checked ?? false;
-        this.subtasks = Array.isArray(obj?.subtasks) ? obj.subtasks.map((s: any) => new Subtask(s)) : [];
-        this.subtasks_progress = obj?.subtasks_progress ?? 0;
-    }
 }

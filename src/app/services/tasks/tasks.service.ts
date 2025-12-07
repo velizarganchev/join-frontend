@@ -1,122 +1,161 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { Task } from '../../models/task.class';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
+import { HttpClient } from '@angular/common/http';
 import { catchError, tap, throwError } from 'rxjs';
+
+import { Task } from '../../models/task.class';
+import { environment } from '../../../environments/environment';
 import { ErrorService } from '../../components/shared/error.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TasksService {
-  private tasks = signal<Task[] | undefined>([]);
-  loadedTasks = this.tasks.asReadonly();
+  /**
+   * Holds the current list of tasks in memory.
+   * All components should subscribe via `loadedTasks`.
+   */
+  private readonly tasks = signal<Task[]>([]);
+  readonly loadedTasks = this.tasks.asReadonly();
 
-  http = inject(HttpClient);
-  errorService = inject(ErrorService);
+  private readonly http = inject(HttpClient);
+  private readonly errorService = inject(ErrorService);
 
+  // ======================
+  // LOAD
+  // ======================
   loadAllTasks() {
-    return this.fetchAllTasks().pipe(
+    return this.http.get<Task[]>(`${environment.baseUrl}/tasks/`, { withCredentials: true }).pipe(
       tap({
         next: (tasks) => this.tasks.set(tasks),
+      }),
+      catchError((error) => {
+        this.errorService.showError(
+          'Something went wrong fetching all tasks'
+        );
+        return throwError(
+          () => new Error('Something went wrong fetching all tasks')
+        );
       })
     );
   }
 
-  private fetchAllTasks() {
+  getSingleTask(taskId: number) {
     return this.http
-      .get<Task[]>(`${environment.baseUrl}/tasks/`)
+      .get<Task>(`${environment.baseUrl}/tasks/${taskId}/`, { withCredentials: true })
       .pipe(
         catchError((error) => {
           this.errorService.showError(
-            'Something went wrong fetching the all Tasks'
+            'Something went wrong fetching the task'
           );
           return throwError(
-            () => new Error('Something went wrong fetching the all Tasks')
+            () => new Error('Something went wrong fetching the task')
           );
         })
       );
   }
 
-  getSingleTask(taskId: number) { }
-
+  // ======================
+  // CREATE
+  // ======================
   addTask(taskData: Task) {
     return this.storeTask(taskData).pipe(
       tap({
         next: (newTask) => {
-          const prevTasks = this.tasks() || [];
-
-          if (prevTasks.find((task) => task.id === newTask.id) === undefined) {
-            this.tasks.update((oldTasks) => [...oldTasks!, newTask]);
-          }
+          this.tasks.update((oldTasks) => {
+            // avoid duplicates by id
+            if (oldTasks.find((t) => t.id === newTask.id)) {
+              return oldTasks;
+            }
+            return [...oldTasks, newTask];
+          });
         },
       })
     );
   }
 
   private storeTask(task: Task) {
-    const newTask = {
+    // Backend expects member IDs, not full objects
+    const payload = {
       ...task,
       id: undefined,
       members: task.members.map((member) => member.id),
     };
-    const prevTasks = this.tasks() || [];
+
+    const prevTasks = this.tasks();
 
     return this.http
-      .post<Task>(`${environment.baseUrl}/tasks/`, newTask)
+      .post<Task>(`${environment.baseUrl}/tasks/`, payload, { withCredentials: true })
       .pipe(
         catchError((error) => {
-          this.errorService.showError('Something went wrong store the Task');
+          // rollback to previous state
+          this.errorService.showError('Something went wrong storing the task');
           this.tasks.set(prevTasks);
           return throwError(
-            () => new Error('Something went wrong store the Task')
+            () => new Error('Something went wrong storing the task')
           );
         })
       );
   }
 
+  // ======================
+  // UPDATE
+  // ======================
   updateTask(taskData: Task) {
-    const taskToUpdate = this.tasks()?.find((task) => task.id === taskData.id);
-    if (taskToUpdate) {
-      return this.update(taskToUpdate).pipe(
-        tap({
-          next: (tasks) => {
-            this.tasks.set(tasks);
-          },
-        })
-      );
-    }
-    return this.tasks;
-  }
-
-  private update(task: Task) {
-    return this.http
-      .put<Task[]>(`${environment.baseUrl}/tasks/${task.id}/`, task)
-      .pipe(
-        catchError((error) => {
-          this.errorService.showError('Something went wrong update the Task');
-          return throwError(
-            () => new Error('Something went wrong update the Task')
-          );
-        })
-      );
-  }
-
-  deleteTask(taskId: number) {
-    return this.delete(taskId).pipe(
+    return this.update(taskData).pipe(
       tap({
+        next: (updatedTask) => {
+          this.tasks.update((oldTasks) =>
+            oldTasks.map((task) =>
+              task.id === updatedTask.id ? updatedTask : task
+            )
+          );
+        },
       })
     );
   }
 
-  private delete(id: number) {
+  private update(task: Task) {
+    // Same as create: members should be IDs
+    const payload = {
+      ...task,
+      members: task.members.map((member) => member.id),
+    };
+
     return this.http
-      .delete<void>(`${environment.baseUrl}/tasks/${id}/`)
+      .put<Task>(`${environment.baseUrl}/tasks/${task.id}/`, payload, { withCredentials: true })
       .pipe(
         catchError((error) => {
-          this.errorService.showError('Something went wrong delete the Task');
+          this.errorService.showError('Something went wrong updating the task');
           return throwError(
-            () => new Error('Something went wrong delete the Task')
+            () => new Error('Something went wrong updating the task')
+          );
+        })
+      );
+  }
+
+  // ======================
+  // DELETE
+  // ======================
+  deleteTask(taskId: number) {
+    const prevTasks = this.tasks();
+
+    return this.http
+      .delete<void>(`${environment.baseUrl}/tasks/${taskId}/`, { withCredentials: true })
+      .pipe(
+        tap({
+          next: () => {
+            // Remove task locally
+            this.tasks.update((oldTasks) =>
+              oldTasks.filter((task) => task.id !== taskId)
+            );
+          },
+        }),
+        catchError((error) => {
+          this.errorService.showError('Something went wrong deleting the task');
+          // rollback
+          this.tasks.set(prevTasks);
+          return throwError(
+            () => new Error('Something went wrong deleting the task')
           );
         })
       );
