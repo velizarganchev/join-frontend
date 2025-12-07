@@ -3,7 +3,7 @@ import { catchError, switchMap, throwError } from "rxjs";
 import { Router } from "@angular/router";
 import { inject } from "@angular/core";
 import { AuthService } from "../components/auth/auth.service";
-import { environment } from "../../environments/environment.prod";
+import { environment } from "../../environments/environment";
 
 const REFRESH_PATH_REGEX = /\/(login|refresh|logout)\/?$/i;
 

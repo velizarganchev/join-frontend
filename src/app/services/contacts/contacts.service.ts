@@ -1,42 +1,41 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-
-import { ErrorService } from '../../components/shared/error.service';
-import { environment } from '../../../environments/environment.prod';
-
-import { Member } from '../../models/member';
+import { HttpClient } from '@angular/common/http';
 import { catchError, tap, throwError } from 'rxjs';
 
+import { ErrorService } from '../../components/shared/error.service';
+import { environment } from '../../../environments/environment';
+import { Member } from '../../models/member';
+
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ContactsService {
-  private contacts = signal<Member[] | undefined>([]);
-  loadedContact = this.contacts.asReadonly();
+  /**
+   * Holds all contacts loaded from the backend.
+   * Components should subscribe via `loadedContacts`.
+   */
+  private readonly contacts = signal<Member[]>([]);
+  readonly loadedContacts = this.contacts.asReadonly();
 
-  http = inject(HttpClient);
-  errorService = inject(ErrorService);
+  private readonly http = inject(HttpClient);
+  private readonly errorService = inject(ErrorService);
 
+  // ======================
+  // LOAD
+  // ======================
   loadAllContacts() {
-    return this.fetchAllContacts().pipe(
+    return this.http.get<Member[]>(`${environment.baseUrl}/contacts/`, { withCredentials: true }).pipe(
       tap({
         next: (contacts) => this.contacts.set(contacts),
+      }),
+      catchError((error) => {
+        this.errorService.showError(
+          'Something went wrong fetching all contacts'
+        );
+        return throwError(
+          () => new Error('Something went wrong fetching all contacts')
+        );
       })
     );
-  }
-
-  private fetchAllContacts() {
-    return this.http
-      .get<Member[]>(`${environment.baseUrl}/contacts/`)
-      .pipe(
-        catchError((error) => {
-          this.errorService.showError(
-            'Something went wrong fetching the all Contacts'
-          );
-          return throwError(
-            () => new Error('Something went wrong fetching the all Contacts')
-          );
-        })
-      );
   }
 }

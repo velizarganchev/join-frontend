@@ -21,7 +21,7 @@
 
       <div class="input-wrapper">
         <input [(ngModel)]="loginData.password" name="password" [type]="passwordVisible() ? 'text' : 'password'"
-          id="password" required placeholder="Password" />
+          id="password" required minlength="6" placeholder="Password" />
         <img id="password-image" src="/assets/img/password-icon.png" (click)="togglePasswordVisibility()" />
       </div>
 

@@ -26,28 +26,26 @@ export class ContactsComponent implements OnInit {
   ngOnInit(): void {
     this.isFetching.set(true);
 
-    const sub = this.contactsService.loadAllContacts().pipe(
+    this.contactsService.loadAllContacts().pipe(
       tap((members) => {
-        const groupedMembers = members.reduce((result: any, currentValue: any) => {
-          const key = currentValue['first_name']?.[0];
-          if (key) {
-            (result[key] = result[key] || []).push(currentValue);
-          }
+        const groupedMembers = members.reduce((result: Record<string, Member[]>, current: Member) => {
+          const key = current.user.first_name?.[0]?.toUpperCase() ?? '#';
+          (result[key] = result[key] || []).push(current);
           return result;
         }, {});
 
         this.members.set(groupedMembers);
-      })
+      }),
     ).subscribe({
       complete: () => {
         this.isFetching.set(false);
+      },
+      error: () => {
+        this.isFetching.set(false);
       }
     });
-
-    this.destroyRef.onDestroy(() => {
-      sub.unsubscribe();
-    });
   }
+
 
   get sortedMemberKeys(): string[] {
     return Object.keys(this.members()).sort();
