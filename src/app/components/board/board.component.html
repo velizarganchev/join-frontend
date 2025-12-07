@@ -3,132 +3,123 @@
     <div class="board-header-container">
       <div class="board-title">
         <h1>Board</h1>
-        <button (click)="openAddTask('')" class="add-task-rsponsive-btn">
-          <img src="../assets/img/board/plus-add-task-mobile.svg" alt="Plus" />
+        <button class="add-task-rsponsive-btn" type="button" (click)="openAddTask('')">
+          <img src="/assets/img/board/plus-add-task-mobile.svg" alt="Plus" />
         </button>
       </div>
+
       <div class="action-container">
-        <form onsubmit="search(event)">
-          <input
-            id="search-text"
-            type="text"
-            minlength="3"
-            required
-            placeholder="Find Task"
-          />
-          <img src="../assets/img/board/vector3.svg" alt="Vector" />
-          <button id="search-button" class="search-button-container">
-            <img src="../assets/img/board/search.svg" alt="Search" />
+        <!-- SEARCH BAR -->
+        <form (submit)="$event.preventDefault()">
+          <input id="search-text" type="text" minlength="3" placeholder="Find Task"
+            (input)="onSearchTermChange($any($event.target).value)" />
+          <img src="/assets/img/board/vector3.svg" alt="Vector" />
+          <button id="search-button" class="search-button-container" type="button">
+            <img src="/assets/img/board/search.svg" alt="Search" />
           </button>
         </form>
-        <button
-          href="/html/add_task.html"
-          class="add-task-button"
-          (click)="openAddTask('')"
-        >
-          Add task <img src="../assets/img/board/add.svg" alt="" />
+
+        <button class="add-task-button" type="button" (click)="openAddTask('')">
+          Add task <img src="/assets/img/board/add.svg" alt="" />
         </button>
       </div>
     </div>
-    <!-- <div class="board-nav-bar-container">
-            <div class="board-nav-item">
-                <span>To do</span>
-                <button (click)="openAddTask('todo')">
-                    <img src="../assets/img/board/plus-button.svg" alt="Plus">
-                </button>
-            </div>
-            <div class="board-nav-item">
-                <span>In progress</span>
-                <button (click)="openAddTask('in-progress')">
-                    <img src="../assets/img/board/plus-button.svg" alt="">
-                </button>
-            </div>
-            <div class="board-nav-item">
-                <span>Await feedback</span>
-                <button (click)="openAddTask('await-feedback')">
-                    <img src="../assets/img/board/plus-button.svg" alt="">
-                </button>
-            </div>
-            <div class="board-nav-item">
-                <span>Done</span>
-            </div>
-        </div> -->
   </div>
+
   <div class="board-distribution-container" id="board-distribution">
+    <!-- TODO COLUMN -->
     <div class="responsive-board-nav-item-container">
       <div class="responsive-board-nav-item">
         <span>To do</span>
-        <button (click)="openAddTask('todo')">
-          <img src="../assets/img/board/plus-button.svg" alt="Plus" />
+        <button type="button" (click)="openAddTask('todo')">
+          <img src="/assets/img/board/plus-button.svg" alt="Plus" />
         </button>
       </div>
-      <div
-        class="board-distribution-colum"
-        id="todo"
-        (mouseleave)="removeHighlight('todo')"
-        (drop)="moveTo('todo')"
-        (dragleave)="removeHighlight('todo')"
-        (dragover)="allowDrop($event); highlight('todo')"
-      >
-        @for (task of getTaskByStatus('todo'); track $index) {
-        <app-task-card [taskId]="task.id" />
+
+      <div class="board-distribution-colum" id="todo" (dragover)="onDragOver($event, 'todo')"
+        (dragleave)="onDragLeave('todo')" (drop)="onDrop($event, 'todo')"
+        [class.dragAreaHighlight]="highlightedColumn() === 'todo'">
+        @if (getTaskByStatus('todo').length === 0) {
+        <div class="no-task-card-container">
+          <h3>No tasks</h3>
+        </div>
+        } @else{
+        @for (task of getTaskByStatus('todo'); track task.id) {
+        <app-task-card [taskId]="task.id!" (dragStartTask)="onDragStartTask($event)" (dragEndTask)="onDragEndTask()"
+          (cardClick)="openTaskDialog($event)" />
+        }
         }
       </div>
     </div>
+
+    <!-- IN PROGRESS COLUMN -->
     <div class="responsive-board-nav-item-container">
       <div class="responsive-board-nav-item">
         <span>In progress</span>
-        <button (click)="openAddTask('in-progress')">
-          <img src="../assets/img/board/plus-button.svg" alt="Plus" />
+        <button type="button" (click)="openAddTask('in_progress')">
+          <img src="/assets/img/board/plus-button.svg" alt="Plus" />
         </button>
       </div>
-      <div
-        class="board-distribution-colum"
-        id="in-progress"
-        (mouseleave)="removeHighlight('in-progress')"
-        (drop)="moveTo('in-progress')"
-        (dragleave)="removeHighlight('in-progress')"
-        (dragover)="allowDrop($event); highlight('in-progress')"
-      >
-        @for (task of getTaskByStatus('in_progress'); track $index) {
-        <app-task-card [taskId]="task.id" />
+
+      <div class="board-distribution-colum" id="in-progress" (dragover)="onDragOver($event, 'in_progress')"
+        (dragleave)="onDragLeave('in_progress')" (drop)="onDrop($event, 'in_progress')"
+        [class.dragAreaHighlight]="highlightedColumn() === 'in_progress'">
+        @if (getTaskByStatus('in_progress').length === 0) {
+        <div class="no-task-card-container">
+          <h3>No tasks</h3>
+        </div>
+        } @else{
+        @for (task of getTaskByStatus('in_progress'); track task.id) {
+        <app-task-card [taskId]="task.id!" (dragStartTask)="onDragStartTask($event)" (dragEndTask)="onDragEndTask()"
+          (cardClick)="openTaskDialog($event)" />
+        }
         }
       </div>
     </div>
+
+    <!-- AWAIT FEEDBACK COLUMN -->
     <div class="responsive-board-nav-item-container">
       <div class="responsive-board-nav-item">
         <span>Await feedback</span>
-        <button (click)="openAddTask('await-feedback')">
-          <img src="../assets/img/board/plus-button.svg" alt="Plus" />
+        <button type="button" (click)="openAddTask('await_feedback')">
+          <img src="/assets/img/board/plus-button.svg" alt="Plus" />
         </button>
       </div>
-      <div
-        class="board-distribution-colum"
-        id="await-feedback"
-        (mouseleave)="removeHighlight('await-feedback')"
-        (drop)="moveTo('await-feedback')"
-        (dragleave)="removeHighlight('await-feedback')"
-        (dragover)="allowDrop($event); highlight('await-feedback')"
-      >
-        @for (task of getTaskByStatus('await_feedback'); track $index) {
-        <app-task-card [taskId]="task.id" />
+
+      <div class="board-distribution-colum" id="await-feedback" (dragover)="onDragOver($event, 'await_feedback')"
+        (dragleave)="onDragLeave('await_feedback')" (drop)="onDrop($event, 'await_feedback')"
+        [class.dragAreaHighlight]="highlightedColumn() === 'await_feedback'">
+        @if (getTaskByStatus('await_feedback').length === 0) {
+        <div class="no-task-card-container">
+          <h3>No tasks</h3>
+        </div>
+        } @else{
+        @for (task of getTaskByStatus('await_feedback'); track task.id) {
+        <app-task-card [taskId]="task.id!" (dragStartTask)="onDragStartTask($event)" (dragEndTask)="onDragEndTask()"
+          (cardClick)="openTaskDialog($event)" />
+        }
         }
       </div>
     </div>
+
+    <!-- DONE COLUMN -->
     <div class="responsive-board-nav-item-container">
       <div class="responsive-board-nav-item">
         <span>Done</span>
       </div>
-      <div
-        class="board-distribution-colum"
-        id="done"
-        (mouseleave)="removeHighlight('done')"
-        (drop)="moveTo('done')"
-        (dragleave)="removeHighlight('done')"
-        (dragover)="allowDrop($event); highlight('done')"
-      >
-        @for (task of getTaskByStatus('done'); track $index) {
-        <app-task-card [taskId]="task.id" />
+
+      <div class="board-distribution-colum" id="done" (dragover)="onDragOver($event, 'done')"
+        (dragleave)="onDragLeave('done')" (drop)="onDrop($event, 'done')"
+        [class.dragAreaHighlight]="highlightedColumn() === 'done'">
+        @if (getTaskByStatus('done').length === 0) {
+        <div class="no-task-card-container">
+          <h3>No tasks</h3>
+        </div>
+        } @else{
+        @for (task of getTaskByStatus('done'); track task.id) {
+        <app-task-card [taskId]="task.id!" (dragStartTask)="onDragStartTask($event)" (dragEndTask)="onDragEndTask()"
+          (cardClick)="openTaskDialog($event)" />
+        }
         }
       </div>
     </div>

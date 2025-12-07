@@ -1,101 +1,225 @@
-import { Component, OnInit } from '@angular/core';
-import { MultiSelectDropdownComponent } from "../../shared/multi-select-dropdown/multi-select-dropdown.component";
-import { FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ClickStopPropagationDirective } from '../../shared/click-stop-propagation.directive';
-import { __values } from 'tslib';
+import {
+  Component,
+  inject,
+} from '@angular/core';
+import {
+  FormArray,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { CommonModule } from '@angular/common';
+
+import { ClickStopPropagationDirective } from '../../shared/click-stop-propagation.directive';
+import { MultiSelectDropdownComponent } from '../../shared/multi-select-dropdown/multi-select-dropdown.component';
+import { TasksService } from '../../../services/tasks/tasks.service';
+import { Member } from '../../../models/member';
+import { Task, TaskCategory, TaskPriority, TaskStatus } from '../../../models/task';
+import { AddTaskStore } from '../add-task.store';
+import { Router } from '@angular/router';
+
+interface SubtaskFormGroup {
+  title: FormControl<string>;
+  status: FormControl<boolean>;
+}
 
 @Component({
   selector: 'app-add-task',
   standalone: true,
-  imports: [ClickStopPropagationDirective, ReactiveFormsModule, MultiSelectDropdownComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    ClickStopPropagationDirective,
+    MultiSelectDropdownComponent,
+  ],
   templateUrl: './add-task.component.html',
-  styleUrl: './add-task.component.scss'
+  styleUrl: './add-task.component.scss',
+  providers: [AddTaskStore],
 })
-export class AddTaskComponent implements OnInit {
-  name = 'Angular';
-  bgColor = 'orange';
-  isPrioSelected = false;
-  showAddSubtaskIcons = false;
-  subtaskInput = '';
-  members: any[] = [];
+export class AddTaskComponent {
+  private readonly fb = inject(FormBuilder);
+  private readonly store = inject(AddTaskStore);
+  private readonly tasksService = inject(TasksService);
+  private readonly router = inject(Router);
 
-  taskForm!: FormGroup;
+  // =============== STORE SIGNALS ===============
 
-  constructor() { }
+  bgColor = this.store.bgColor;
+  priority = this.store.priority;
+  subtaskInput = this.store.subtaskInput;
+  showAddSubtaskIcons = this.store.showAddSubtaskIcons;
+  isSubmitting = this.store.isSubmitting;
 
-  ngOnInit(): void {
-    this.initForm();
+  // =============== FORM ===============
+
+  readonly taskForm = this.fb.group({
+    title: ['', Validators.required],
+    category: ['user_story', Validators.required],
+    description: [''],
+    status: ['todo', Validators.required],
+    color: ['#2a3647', Validators.required],
+    priority: [null as TaskPriority | null, Validators.required],
+    due_date: ['', Validators.required],
+    checked: [false],
+    members: [[] as Member[]],
+    subtasks: this.fb.array<FormGroup<SubtaskFormGroup>>([]),
+  });
+
+
+  get subtasksArray(): FormArray<FormGroup<SubtaskFormGroup>> {
+    return this.taskForm.controls.subtasks as FormArray<FormGroup<SubtaskFormGroup>>;
   }
 
-  onHandleSelectedContacts(contacts: any[]) {
-    contacts.forEach(el => {
-      this.members.push(el.id);
+  private createSubtaskGroup(initialTitle: string): FormGroup<SubtaskFormGroup> {
+    return this.fb.group<SubtaskFormGroup>({
+      title: this.fb.nonNullable.control(initialTitle, {
+        validators: [Validators.required],
+      }),
+      status: this.fb.nonNullable.control(false),
     });
   }
 
-  choosePrio(prio: any) {
-    switch (prio) {
-      case 'low':
-        this.bgColor = 'limegreen'
-        break;
-      case 'medium':
-        this.bgColor = 'orange'
-        break;
-      case 'high':
-        this.bgColor = 'red'
-        break;
-      default:
-        this.bgColor = 'orange'
-        break;
-    }
+  // =============== FORM → TASK MAP ===============
 
-    this.taskForm.value['priority'] = prio
+  private mapFormToTask(): Task {
+    const raw = this.taskForm.getRawValue() as {
+      title: string;
+      category: string;
+      description: string;
+      status: string;
+      color: string;
+      priority: TaskPriority | null;
+      due_date: string;
+      checked: boolean | null;
+      members: Member[];               // <-- ТУК
+      subtasks: { title: string; status: boolean }[];
+    };
+
+    return {
+      id: undefined,
+      title: raw.title,
+      category: raw.category as TaskCategory,
+      description: raw.description,
+      status: raw.status as TaskStatus,
+      color: raw.color,
+      priority: (raw.priority ?? 'medium') as TaskPriority,
+      members: raw.members,            // <-- подаваме Member[]
+      created_at: undefined,
+      due_date: raw.due_date,
+      checked: raw.checked ?? false,
+      subtasks: raw.subtasks.map((st) => ({
+        id: undefined,
+        title: st.title,
+        status: st.status,
+      })),
+      subtasks_progress: 0,
+    };
+  }
+
+
+  // =============== HANDLERS ===============
+
+  onHandleSelectedContacts(contacts: Member[]) {
+    this.taskForm.controls.members.setValue(contacts);
+  }
+
+  choosePrio(prio: TaskPriority) {
+    this.store.setPriority(prio);
+    this.taskForm.controls.priority.setValue(prio);
   }
 
   onTogleSubtaskIcons() {
-    this.showAddSubtaskIcons = !this.showAddSubtaskIcons;
+    this.store.toggleSubtaskIcons();
+  }
+
+  onSubtaskInputChange(value: string) {
+    this.store.setSubtaskInput(value);
   }
 
   onAddSubtask() {
-    console.log(this.subtaskInput);
+    const title = this.subtaskInput().trim();
+    if (!title) {
+      return;
+    }
 
+    this.subtasksArray.push(this.createSubtaskGroup(title));
+    this.store.setSubtaskInput('');
+    this.store.toggleSubtaskIcons();
   }
+
+  editingIndex: number | null = null;
+  private originalSubtaskTitle = '';
+
+  onStartEditSubtask(index: number) {
+    const ctrl = this.subtasksArray.at(index);
+    if (!ctrl) return;
+
+    this.editingIndex = index;
+    this.originalSubtaskTitle = ctrl.value.title ?? '';
+  }
+
+  onConfirmEditSubtask() {
+    if (this.editingIndex === null) return;
+
+    const ctrl = this.subtasksArray.at(this.editingIndex);
+    if (!ctrl) return;
+
+    const titleCtrl = ctrl.controls.title;
+    const trimmed = titleCtrl.value.trim();
+
+    titleCtrl.setValue(trimmed);
+    titleCtrl.markAsTouched();
+
+    if (!trimmed) {
+      return;
+    }
+
+    this.editingIndex = null;
+    this.originalSubtaskTitle = '';
+  }
+
+
+  onCancelEditSubtask(index: number) {
+    const ctrl = this.subtasksArray.at(index);
+    if (!ctrl) return;
+
+    ctrl.patchValue({ title: this.originalSubtaskTitle });
+    this.editingIndex = null;
+    this.originalSubtaskTitle = '';
+  }
+
+
+  isEditingSubtask(index: number): boolean {
+    return this.editingIndex === index;
+  }
+
+  onDeleteSubtask(index: number) {
+    this.subtasksArray.removeAt(index);
+  }
+
 
   onCreateTask() {
-    this.taskForm.value['members'] = this.members;
-    console.log(this.taskForm.value);
-  }
+    if (this.taskForm.invalid) {
+      this.taskForm.markAllAsTouched();
+      return;
+    }
 
-  private initForm() {
+    this.store.setSubmitting(true);
 
-    let title = '';
-    let category = 'user_story';
-    let description = '';
-    let status = '';
-    let color = '';
-    let priority = '';
-    let members = new FormArray([]);
-    let due_date = '';
-    let checked = false;
-    let subtasks = new FormArray([]);
+    const taskPayload = this.mapFormToTask();
 
-    this.taskForm = new FormGroup({
-      title: new FormControl(title, Validators.required),
-      category: new FormControl(category, Validators.required),
-      description: new FormControl(description),
-      status: new FormControl(status, Validators.required),
-      color: new FormControl(color, Validators.required),
-      priority: new FormControl(priority, Validators.required),
-      members: members,
-      due_date: new FormControl(due_date, Validators.required),
-      checked: new FormControl(checked, Validators.required),
-      subtasks: subtasks
+    this.tasksService.addTask(taskPayload).subscribe({
+      next: () => {
+        this.store.setSubmitting(false);
+        this.taskForm.reset();
+        this.store.resetUiState();
+        this.router.navigate(['/board']);
+      },
+      error: () => {
+        this.store.setSubmitting(false);
+      },
     });
-
-  }
-
-  get formSubtasks() {
-    return (<FormArray>this.taskForm.get('subTasksArray')).controls;
   }
 }

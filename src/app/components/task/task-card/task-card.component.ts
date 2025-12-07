@@ -1,36 +1,94 @@
-import { Component, inject, input, OnInit } from '@angular/core';
-import { Task } from '../../../models/task.class';
+import {
+  Component,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+import { Task } from '../../../models/task';
 import { TasksService } from '../../../services/tasks/tasks.service';
 
 @Component({
   selector: 'app-task-card',
   standalone: true,
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './task-card.component.html',
-  styleUrl: './task-card.component.scss'
+  styleUrl: './task-card.component.scss',
 })
-export class TaskCardComponent implements OnInit {
-  taskId = input<number>();
-  tskService = inject(TasksService);
-  task?: Task;
+export class TaskCardComponent {
+  taskId = input.required<number>();
 
-  currentDraggedElement?: number;
+  dragStartTask = output<number>();
+  dragEndTask = output<void>();
 
-  ngOnInit(): void {
-    this.task = this.tskService
-      .loadedTasks()
-      ?.find((ts) => ts.id === this.taskId());
+  cardClick = output<number>();
+
+  private readonly tasksService = inject(TasksService);
+
+  private readonly isDragging = signal(false);
+
+  task = computed<Task | null>(() => {
+    const id = this.taskId();
+    const tasks = this.tasksService.loadedTasks() ?? [];
+    return tasks.find((t) => t.id === id) ?? null;
+  });
+
+  progressPercent = computed(() => {
+    const t = this.task();
+    if (!t || !t.subtasks || t.subtasks.length === 0) return 0;
+    if (!t.subtasks_progress || t.subtasks_progress < 0) return 0;
+
+    return (t.subtasks_progress / t.subtasks.length) * 100;
+  });
+
+  progressLabel = computed(() => {
+    const t = this.task();
+    if (!t || !t.subtasks || t.subtasks.length === 0) return 'No subtasks';
+    return `${t.subtasks_progress}/${t.subtasks.length} Subtasks`;
+  });
+
+  priorityIcon = computed(() => {
+    const t = this.task();
+    switch (t?.priority) {
+      case 'high':
+        return '/assets/img/PrioHigh.png';
+      case 'low':
+        return '/assets/img/PrioLow.png';
+      case 'medium':
+      default:
+        return '/assets/img/PrioMedium.png';
+    }
+  });
+
+  // ========== Drag & Drop ==========
+
+  onDragStart(event: DragEvent) {
+    const id = this.taskId();
+    if (id != null) {
+      if (event.dataTransfer) {
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', String(id));
+      }
+
+      this.isDragging.set(true);
+      this.dragStartTask.emit(id);
+    }
   }
 
-  startDragging(id?: number) {
-    this.currentDraggedElement = id;
+  onDragEnd() {
+    setTimeout(() => this.isDragging.set(false), 0);
+    this.dragEndTask.emit();
   }
 
-  // onAddTask() {
-  //   console.log('Task opened:', this.task);
-  //   const data = this.task;
-  //   this.tskService.addTask(data!).subscribe({
-  //     next: (res) => console.log('RESPONSE TASK COMPONENT', res),
-  //   });
-  // }
+  onCardClick() {
+    if (this.isDragging()) return;
+
+    const id = this.taskId();
+    if (id != null) {
+      this.cardClick.emit(id);
+    }
+  }
 }

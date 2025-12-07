@@ -1,83 +1,109 @@
 <section>
   <h1 class="add-task-headline">Add Task</h1>
+
   <form [formGroup]="taskForm" (ngSubmit)="onCreateTask()">
     <div class="content-container">
+      <!-- LEFT SIDE -->
       <div class="content-left">
+        <!-- TITLE -->
         <div class="title-container">
           <div class="title-input-headline">
             <label for="title">Title</label>
             <div class="star">*</div>
           </div>
-          <input required class="inputfield" name="title" formControlName="title" placeholder="Enter a title" />
+          <input required class="inputfield" id="title" name="title" formControlName="title"
+            placeholder="Enter a title" />
         </div>
+
+        <!-- DESCRIPTION -->
         <div class="content-description">
           <label for="description-title">Description</label>
-          <textarea name="description" formControlName="description" rows="3"></textarea>
+          <textarea id="description-title" name="description" formControlName="description" rows="3"></textarea>
         </div>
-        <app-multi-select-dropdown appClickStopPropagation (shareCheckedList)="onHandleSelectedContacts($event)" />
+
+        <!-- MEMBERS / CONTACTS -->
+        <app-multi-select-dropdown appClickStopPropagation
+          (shareCheckedList)="onHandleSelectedContacts($event)"></app-multi-select-dropdown>
       </div>
+
       <div class="separator-line"></div>
+
+      <!-- RIGHT SIDE -->
       <div class="content-right">
+        <!-- DUE DATE -->
         <div class="date-container">
           <div class="date-input-headline">
             <label for="date">Due date</label>
             <div class="star">*</div>
           </div>
-          <input required formControlName="due_date" type="date" class="inputfield" min="todaydate" />
+          <input required id="date" formControlName="due_date" type="date" class="inputfield" min="todaydate" />
         </div>
+
+        <!-- PRIORITY -->
         <div class="prio-container">
           <div class="prio-headline">Prio</div>
           <div class="prio-content-container">
-            <div class="prio-item" [style]="bgColor === 'red' ? { background: bgColor} : null"
+            <!-- HIGH -->
+            <div class="prio-item" [ngStyle]="bgColor() === 'red' ? { background: bgColor() } : null"
               (click)="choosePrio('high')">
               <div class="prio-item-headline">Urgent</div>
-              @if (bgColor === 'red') {
+              @if (bgColor() === 'red') {
               <img src="/assets/img/PrioHighWhite.png" />
-              }@else {
+              } @else {
               <img src="/assets/img/PrioHigh.png" />
               }
             </div>
-            <div class="prio-item hover" [style]="bgColor === 'orange' ? { background: bgColor} : null"
+
+            <!-- MEDIUM -->
+            <div class="prio-item hover" [ngStyle]="bgColor() === 'orange' ? { background: bgColor() } : null"
               (click)="choosePrio('medium')">
               <div class="prio-item-headline">Medium</div>
-              @if (bgColor === 'orange') {
+              @if (bgColor() === 'orange') {
               <img src="/assets/img/PrioMediumWhite.png" />
-              }@else {
+              } @else {
               <img src="/assets/img/PrioMedium.png" />
               }
             </div>
-            <div class="prio-item hover" [style]="bgColor === 'limegreen' ? { background: 'limegreen'} : null"
+
+            <!-- LOW -->
+            <div class="prio-item hover" [ngStyle]="bgColor() === 'limegreen' ? { background: 'limegreen' } : null"
               (click)="choosePrio('low')">
               <div class="prio-item-headline">Low</div>
-              @if (bgColor === 'limegreen') {
+              @if (bgColor() === 'limegreen') {
               <img src="/assets/img/PrioLowWhite.png" />
-              }@else {
+              } @else {
               <img src="/assets/img/PrioLow.png" />
               }
             </div>
           </div>
         </div>
+
+        <!-- CATEGORY -->
         <div class="category-container">
           <div class="category-input-headline">
             <label for="category">Category</label>
             <div class="star">*</div>
           </div>
-          <select class="inputfield" name="category" formControlName="category">
+          <select class="inputfield" id="category" name="category" formControlName="category">
             <option value="technical_task">Technical Task</option>
             <option value="user_story">User Story</option>
           </select>
         </div>
+
+        <!-- SUBTASKS -->
         <div class="subtasks-container">
           <div class="subtask-headline">Subtasks</div>
           <div class="subtask-content">
+            <!-- INPUT + ICONS -->
             <div class="subtask-input">
-              <input autocomplete="off" placeholder="Add new subtask" (click)="onTogleSubtaskIcons()" />
+              <input autocomplete="off" placeholder="Add new subtask" [value]="subtaskInput()"
+                (input)="onSubtaskInputChange($any($event.target).value)" (click)="onTogleSubtaskIcons()" />
               <div class="subtasks-imgages-container">
-                @if (!showAddSubtaskIcons) {
+                @if (!showAddSubtaskIcons()) {
                 <div class="subtask-img">
                   <img src="/assets/img/+.png" />
                 </div>
-                }@else if (showAddSubtaskIcons) {
+                } @else if (showAddSubtaskIcons()) {
                 <div class="subtask-img">
                   <img src="/assets/img/cancel_dark.png" />
                 </div>
@@ -87,35 +113,57 @@
                 }
               </div>
             </div>
+
+            <!-- LIST -->
             <div class="subtask-list-container">
               <ul class="subtask-list" formArrayName="subtasks">
-                <li class="subtask-list-item">
-                  <span>SubtaskTitle</span>
+                @for (subtaskCtrl of subtasksArray.controls; let i = $index; track i) {
+                <li class="subtask-list-item" [formGroupName]="i">
+                  @if (isEditingSubtask(i)) {
+                  <!-- EDIT MODE -->
+                  <input class="subtask-edit-input" formControlName="title" autocomplete="off" />
                   <div class="subtask-list-item-actions-container">
-                    <button type="button" class="subtask-edit-btn-container">
-                      <img src="assets/img/edit-contact.png" alt="Edit">
+                    <button type="button" class="subtask-edit-btn-container" (click)="onConfirmEditSubtask()">
+                      <img src="assets/img/hook-icon-black.png" alt="Save" style="width: 1rem; height: 1rem" />
                     </button>
-                    <button type="button" class="subtask-delete-btn-container">
-                      <img src="assets/img/delete-contact.png" alt="Delete">
+                    <button type="button" class="subtask-delete-btn-container" (click)="onCancelEditSubtask(i)">
+                      <img src="assets/img/cancel_dark.png" alt="Cancel" />
                     </button>
                   </div>
+                  } @else {
+                  <!-- VIEW MODE -->
+                  <span>{{ subtaskCtrl.value.title }}</span>
+                  <div class="subtask-list-item-actions-container">
+                    <button type="button" class="subtask-edit-btn-container" (click)="onStartEditSubtask(i)">
+                      <img src="assets/img/edit-contact.png" alt="Edit" />
+                    </button>
+                    <button type="button" class="subtask-delete-btn-container" (click)="onDeleteSubtask(i)">
+                      <img src="assets/img/delete-contact.png" alt="Delete" />
+                    </button>
+                  </div>
+                  }
                 </li>
+                }
               </ul>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- FOOTER BUTTONS -->
     <div class="buttons-and-info-text">
       <div class="required-text-container">
         <div class="star">*</div>
         <span>This field is required</span>
       </div>
+
       <div class="buttons-container">
-        <button type="reset" class="cancel-button" onclick="resetPrio()">
+        <button type="reset" class="cancel-button">
           Clear <img src="/assets/img/cancel_dark.png" />
         </button>
-        <button class="create-task-button">
+
+        <button type="submit" class="create-task-button" [disabled]="taskForm.invalid || isSubmitting()">
           Create Task <img src="/assets/img/confirm.png" />
         </button>
       </div>

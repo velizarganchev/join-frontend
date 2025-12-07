@@ -14,7 +14,7 @@
             align-items: center;
 
             .board-title h1 {
-                margin: 0px;
+                margin: 0;
                 font-family: 'Inter', sans-serif;
                 font-size: 61px;
                 line-height: 73px;
@@ -30,11 +30,11 @@
                     width: 312px;
                     height: 48px;
                     padding: 8px 16px;
-                    background-color: #ffff;
+                    background-color: #fff;
                     display: flex;
                     justify-content: space-evenly;
                     gap: 10px;
-                    border: 1px solid #A8A8A8;
+                    border: 1px solid #a8a8a8;
                     border-radius: 10px;
 
                     input,
@@ -43,38 +43,38 @@
                     }
 
                     input {
-                        background-color: #ffff;
+                        background-color: #fff;
                         border: none;
                         outline: none;
-                        padding: 0px;
+                        padding: 0;
                         flex-grow: 1;
 
                         &::placeholder {
-                            color: #D1D1D1;
+                            color: #d1d1d1;
                             font-size: 20px;
                             font-weight: 400;
                             line-height: 24px;
                         }
                     }
 
-                    input[type="text"] {
+                    input[type='text'] {
                         font-size: 20px;
                     }
 
                     button {
                         cursor: pointer;
-                        padding: 0px;
-                        background-color: #ffff;
+                        padding: 0;
+                        background-color: #fff;
                         border: none;
                         outline: none;
 
                         img {
-                            color: #2A3647;
+                            color: #2a3647;
 
                             &:hover {
                                 border: none;
                                 border-radius: 50px;
-                                background-color: #D9D9D9;
+                                background-color: #d9d9d9;
                             }
                         }
                     }
@@ -90,19 +90,19 @@
                     font-size: 18px;
                     font-weight: 700;
                     line-height: 25.2px;
-                    color: #FFFFFF;
+                    color: #ffffff;
                     padding: 8px 16px;
-                    background-color: #2A3647;
-                    border: 1px solid #2A3647;
+                    background-color: #2a3647;
+                    border: 1px solid #2a3647;
                     border-radius: 10px;
                     cursor: pointer;
                     transition: transform 100ms ease-in-out;
 
                     &:hover {
                         border: none;
-                        background-color: #0D99FF;
+                        background-color: #0d99ff;
                         transform: translateX(-1px);
-                        box-shadow: -2px 0px 6px 0px rgb(0, 0, 0, 0.5);
+                        box-shadow: -2px 0 6px 0 rgba(0, 0, 0, 0.5);
                     }
                 }
             }
@@ -126,7 +126,7 @@
                 font-size: 20px;
                 font-weight: 700;
                 line-height: 24px;
-                color: #42526E;
+                color: #42526e;
 
                 button {
                     border: none;
@@ -138,56 +138,13 @@
     }
 }
 
-
 .add-task-rsponsive-btn {
     display: none;
 }
 
-
-// .search-bar {
-//     width: 100%;
-//     display: flex;
-//     align-items: center;
-//     border: 1px solid black;
-//     border-radius: 10px;
-// }
-
-
-// .buttonsAndInfotext {
-//     position: relative;
-//     width: auto;
-//     margin-top: 25px !important;
-// }
-
-// .CompleteContent {
-//     gap: 20px;
-// }
-
-// .Content {
-//     gap: 30px;
-// }
-
-// .Content2 {
-//     top: 0px;
-//     margin-top: 0px !important;
-// }
-
-// .categories {
-//     width: 450px;
-//     top: 538px;
-// }
-
-
-// .ContainerForAllPossibleContacts {
-//     position: relative;
-//     top: 0 !important;
-// }
-
-// .assignedToContainerInputEdit {
-//     width: 100%;
-// }
-
-/* BOARD DISTRIBUTION */
+/* ============================
+   BOARD DISTRIBUTION
+   ============================ */
 
 .board-distribution-container {
     width: 100%;
@@ -205,12 +162,13 @@
     .responsive-board-nav-item-container {
         display: flex;
         flex-direction: column;
-        align-items: center;
+        align-items: stretch;
         padding: 8px;
         border-radius: 10px;
         background-color: whitesmoke;
         box-shadow: 0 2px 10px 0 #00000014;
 
+        min-height: 220px;
 
         .responsive-board-nav-item {
             width: 100%;
@@ -221,25 +179,30 @@
             font-size: 20px;
             font-weight: 700;
             line-height: 32.4px;
-            color: #42526E;
+            color: #42526e;
 
             button {
                 border: none;
                 background-color: inherit;
                 cursor: pointer;
             }
-
         }
 
         .board-distribution-colum {
-            width: auto;
-            min-height: 50dvh;
+            width: 100%;
+            min-height: 150px;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 10px;
-            /* padding: 0 64px; */
-            /* border: 1px solid black; */
+        }
+
+        &.dragAreaHighlight {
+            background-color: #e3f2fd;
+            box-shadow: 0 0 0 2px rgba(13, 153, 255, 0.35);
+            transition:
+                background-color 120ms ease-in-out,
+                box-shadow 120ms ease-in-out;
         }
     }
 }
@@ -248,10 +211,13 @@
     width: 252px;
     height: 48px;
     text-align: center;
-    color: #A8A8A8;
-    background-color: #E7E7E7;
-    border: 1px dotted #A8A8A8;
+    color: #a8a8a8;
+    background-color: #e7e7e7;
+    border: 1px dotted #a8a8a8;
     border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .no-task-card-container h3 {

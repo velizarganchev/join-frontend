@@ -1,82 +1,124 @@
 import {
   Component,
-  DestroyRef,
-  ElementRef,
   inject,
   OnInit,
-  Renderer2,
   signal,
 } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { TasksService } from '../../services/tasks/tasks.service';
-import { Task } from '../../models/task.class';
-import { TaskCardComponent } from "../task/task-card/task-card.component";
+import { Task, TaskStatus } from '../../models/task';
+import { TaskCardComponent } from '../task/task-card/task-card.component';
 
 @Component({
   selector: 'app-board',
   standalone: true,
   imports: [TaskCardComponent],
-  providers: [],
   templateUrl: './board.component.html',
   styleUrl: './board.component.scss',
 })
 export class BoardComponent implements OnInit {
+  private readonly tasksService = inject(TasksService);
+  private readonly router = inject(Router);
+
   error = signal('');
   isFetching = signal(false);
 
-  private tskService = inject(TasksService);
-  destroyRef = inject(DestroyRef);
+  tasks = this.tasksService.loadedTasks;
 
-  tasks = this.tskService.loadedTasks;
+  highlightedColumn = signal<TaskStatus | null>(null);
 
-  constructor(private renderer: Renderer2, private el: ElementRef) { }
+  draggedTaskId = signal<number | null>(null);
+
+  selectedTaskId = signal<number | null>(null);
+  showTaskDialog = signal(false);
+
+  searchTerm = signal<string>('');
 
   ngOnInit(): void {
     this.isFetching.set(true);
 
-    const sub = this.tskService.loadAllTasks().subscribe({
+    this.tasksService.loadAllTasks().subscribe({
       error: (error: Error) => {
         this.error.set(error.message);
+        this.isFetching.set(false);
       },
       complete: () => {
         this.isFetching.set(false);
       },
     });
+  }
 
-    this.destroyRef.onDestroy(() => {
-      sub.unsubscribe();
+  openAddTask(status?: TaskStatus | '') {
+    const queryParams = status ? { status } : undefined;
+    this.router.navigate(['/add-task'], { queryParams });
+  }
+
+  onSearchTermChange(value: string) {
+    this.searchTerm.set(value.toLowerCase());
+  }
+
+  getTaskByStatus(status: TaskStatus): Task[] {
+    const all = this.tasks() ?? [];
+    const term = this.searchTerm().trim();
+
+    return all.filter((task) => {
+      if (task.status !== status) return false;
+      if (!term) return true;
+
+      const haystack =
+        `${task.title} ${task.description ?? ''}`.toLowerCase();
+      return haystack.includes(term);
     });
   }
 
-  openAddTask(status: string) {
-    console.log(this.tasks());
-    
-    console.log(status);
+  // ========== DRAG & DROP ==========
+
+  onDragStartTask(taskId: number) {
+    this.draggedTaskId.set(taskId);
   }
 
-  getTaskByStatus(status: string): Task[] | undefined {
-    return this.tasks()?.filter((task) => task.status === status);
+  onDragEndTask() {
+    this.draggedTaskId.set(null);
+    this.highlightedColumn.set(null);
   }
 
-  allowDrop(event: DragEvent) {
+  onDragOver(event: DragEvent, column: TaskStatus) {
+    event.preventDefault(); // критично!
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+    this.highlightedColumn.set(column);
+  }
+
+  onDragLeave(column: TaskStatus) {
+    if (this.highlightedColumn() === column) {
+      this.highlightedColumn.set(null);
+    }
+  }
+
+  onDrop(event: DragEvent, column: TaskStatus) {
     event.preventDefault();
+    const taskId = this.draggedTaskId();
+    this.highlightedColumn.set(null);
+
+    if (taskId == null) return;
+
+    this.tasksService.updateTaskStatus(taskId, column).subscribe({
+      next: () => { },
+      error: (err) => console.error(err),
+    });
+
+    this.draggedTaskId.set(null);
   }
 
-  highlight(id: string) {
-    const element = this.el.nativeElement.querySelector(`#${id}`);
-    if (element) {
-      this.renderer.addClass(element, 'dragAreaHighlight');
-    }
+  openTaskDialog(taskId: number) {
+    this.selectedTaskId.set(taskId);
+    this.showTaskDialog.set(true);
   }
 
-  removeHighlight(id: string) {
-    const element = this.el.nativeElement.querySelector(`#${id}`);
-    if (element) {
-      this.renderer.removeClass(element, 'dragAreaHighlight');
-    }
-  }
-
-  moveTo(taskName: string) {
-    console.log(`Move to ${taskName}`);
+  closeTaskDialog() {
+    this.showTaskDialog.set(false);
+    this.selectedTaskId.set(null);
   }
 }

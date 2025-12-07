@@ -1,23 +1,44 @@
-<div class="card-container" draggable="true" (dragstart)="startDragging(taskId())" id="cardId">
+<div class="card-container" draggable="true" (dragstart)="onDragStart($event)" (dragend)="onDragEnd()"
+    (click)="onCardClick()">
+    @if (task(); as t) {
     <div class="card">
-        <button class="card-label">{{ task?.category }}</button>
-        <h3 class="card-title">{{ task?.title }}</h3>
-        <p class="card-content">{{ task?.description }}</p>
+        <button class="card-label">
+            {{ t.category }}
+        </button>
+        <h3 class="card-title">
+            {{ t.title }}
+        </h3>
 
-        <div id="'progress' + task.id" class="progress-bar-container">
+        <p class="card-content">
+            {{ t.description }}
+        </p>
+
+        @if (t.subtasks!.length) {
+        <div class="progress-bar-container">
             <div class="progress-bar">
-                <div class="progress-done" id="'progress' + task.id"></div>
+                <div class="progress-done" [style.width.%]="progressPercent()"></div>
             </div>
-            <p class="subtasks-container">1/4 Subtasks</p>
+            <p class="subtasks-container">
+                {{ progressLabel() }}
+            </p>
         </div>
+        }
 
         <div class="card-footer">
-            <div class="profiles" id="'tasksProfiles' + task.id">
-                <div class="profile">KZ</div>
+            <div class="profiles">
+                @for (member of t.members; track member.id) {
+                <div class="profile" [style.background-color]="member.color">
+                    {{
+                    member.user.first_name.charAt(0)
+                    + member.user.last_name.charAt(0)
+                    }}
+                </div>
+                }
             </div>
             <div class="priority-container">
-                <img src="/assets/img/PrioLow.png" alt="Priority Icon" />
+                <img [src]="priorityIcon()" alt="Priority Icon" />
             </div>
         </div>
     </div>
+    }
 </div>

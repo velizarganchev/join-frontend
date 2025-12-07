@@ -2,7 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { catchError, tap, throwError } from 'rxjs';
 
-import { Task } from '../../models/task.class';
+import { Task, TaskStatus } from '../../models/task';
 import { environment } from '../../../environments/environment';
 import { ErrorService } from '../../components/shared/error.service';
 
@@ -159,5 +159,75 @@ export class TasksService {
           );
         })
       );
+  }
+
+  // ======================
+  // STATUS UPDATE (PATCH)
+  // ======================
+
+  /**
+   * Public API method – orchestrates optimistic local update + HTTP PATCH.
+   */
+  updateTaskStatus(taskId: number, status: TaskStatus) {
+    const prevTasks = this.tasks();
+
+    // 1) Optimistic update
+    this.applyOptimisticStatusUpdate(taskId, status);
+
+    // 2) HTTP PATCH
+    return this.sendStatusPatchRequest(taskId, status).pipe(
+      tap({
+        next: (updatedTask) => this.applyServerStatusResponse(updatedTask),
+      }),
+      catchError((error) =>
+        this.handleStatusUpdateError(error, prevTasks)
+      )
+    );
+  }
+
+  /**
+   * Updates the task status locally (optimistic update).
+   */
+  private applyOptimisticStatusUpdate(taskId: number, status: TaskStatus): void {
+    this.tasks.update((oldTasks) =>
+      oldTasks.map((task) =>
+        task.id === taskId ? { ...task, status } : task
+      )
+    );
+  }
+
+  /**
+   * Sends the HTTP PATCH request to update only the status field.
+   */
+  private sendStatusPatchRequest(taskId: number, status: TaskStatus) {
+    return this.http.patch<Task>(
+      `${environment.baseUrl}/tasks/${taskId}/`,
+      { status },
+      { withCredentials: true }
+    );
+  }
+
+  /**
+   * Synchronizes the local tasks state with the server response.
+   */
+  private applyServerStatusResponse(updatedTask: Task): void {
+    this.tasks.update((oldTasks) =>
+      oldTasks.map((task) =>
+        task.id === updatedTask.id ? updatedTask : task
+      )
+    );
+  }
+
+  /**
+   * Handles errors for status updates: rollback & user-facing error.
+   */
+  private handleStatusUpdateError(error: unknown, prevTasks: Task[]) {
+    this.tasks.set(prevTasks);
+    this.errorService.showError(
+      'Something went wrong updating task status'
+    );
+    return throwError(
+      () => new Error('Something went wrong updating task status')
+    );
   }
 }
