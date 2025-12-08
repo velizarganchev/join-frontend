@@ -9,11 +9,12 @@ import { Router } from '@angular/router';
 import { TasksService } from '../../services/tasks/tasks.service';
 import { Task, TaskStatus } from '../../models/task';
 import { TaskCardComponent } from '../task/task-card/task-card.component';
+import { TaskDialogComponent } from "../task/task-dialog/task-dialog.component";
 
 @Component({
   selector: 'app-board',
   standalone: true,
-  imports: [TaskCardComponent],
+  imports: [TaskCardComponent, TaskDialogComponent],
   templateUrl: './board.component.html',
   styleUrl: './board.component.scss',
 })
@@ -121,4 +122,13 @@ export class BoardComponent implements OnInit {
     this.showTaskDialog.set(false);
     this.selectedTaskId.set(null);
   }
+
+  onTaskDeleted() {
+    this.closeTaskDialog();
+  }
+
+  onTaskUpdated() {
+    this.closeTaskDialog();
+  }
+
 }

@@ -124,4 +124,8 @@
       </div>
     </div>
   </div>
+  @if (showTaskDialog() && selectedTaskId() !== null) {
+  <app-task-dialog [taskId]="selectedTaskId()!" (close)="closeTaskDialog()" (deleted)="onTaskDeleted()"
+    (updated)="onTaskUpdated()" />
+  }
 </section>

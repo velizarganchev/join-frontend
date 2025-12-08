@@ -23,25 +23,32 @@ export class TasksService {
   // ======================
   // LOAD
   // ======================
+
   loadAllTasks() {
-    return this.http.get<Task[]>(`${environment.baseUrl}/tasks/`, { withCredentials: true }).pipe(
-      tap({
-        next: (tasks) => this.tasks.set(tasks),
-      }),
-      catchError((error) => {
-        this.errorService.showError(
-          'Something went wrong fetching all tasks'
-        );
-        return throwError(
-          () => new Error('Something went wrong fetching all tasks')
-        );
+    return this.http
+      .get<Task[]>(`${environment.baseUrl}/tasks/`, {
+        withCredentials: true,
       })
-    );
+      .pipe(
+        tap({
+          next: (tasks) => this.tasks.set(tasks),
+        }),
+        catchError((error) => {
+          this.errorService.showError(
+            'Something went wrong fetching all tasks'
+          );
+          return throwError(
+            () => new Error('Something went wrong fetching all tasks')
+          );
+        })
+      );
   }
 
   getSingleTask(taskId: number) {
     return this.http
-      .get<Task>(`${environment.baseUrl}/tasks/${taskId}/`, { withCredentials: true })
+      .get<Task>(`${environment.baseUrl}/tasks/${taskId}/`, {
+        withCredentials: true,
+      })
       .pipe(
         catchError((error) => {
           this.errorService.showError(
@@ -57,6 +64,7 @@ export class TasksService {
   // ======================
   // CREATE
   // ======================
+
   addTask(taskData: Task) {
     return this.storeTask(taskData).pipe(
       tap({
@@ -74,7 +82,6 @@ export class TasksService {
   }
 
   private storeTask(task: Task) {
-    // Backend expects member IDs, not full objects
     const payload = {
       ...task,
       id: undefined,
@@ -84,10 +91,11 @@ export class TasksService {
     const prevTasks = this.tasks();
 
     return this.http
-      .post<Task>(`${environment.baseUrl}/tasks/`, payload, { withCredentials: true })
+      .post<Task>(`${environment.baseUrl}/tasks/`, payload, {
+        withCredentials: true,
+      })
       .pipe(
         catchError((error) => {
-          // rollback to previous state
           this.errorService.showError('Something went wrong storing the task');
           this.tasks.set(prevTasks);
           return throwError(
@@ -97,11 +105,12 @@ export class TasksService {
       );
   }
 
-  // ======================
-  // UPDATE
-  // ======================
+  /**
+   * Update a task (used by Edit dialog).
+   * Internally uses HTTP PATCH, not PUT.
+   */
   updateTask(taskData: Task) {
-    return this.update(taskData).pipe(
+    return this.patchTask(taskData).pipe(
       tap({
         next: (updatedTask) => {
           this.tasks.update((oldTasks) =>
@@ -114,7 +123,10 @@ export class TasksService {
     );
   }
 
-  private update(task: Task) {
+  /**
+   * Sends PATCH for full Task object.
+   */
+  private patchTask(task: Task) {
     // Same as create: members should be IDs
     const payload = {
       ...task,
@@ -122,7 +134,9 @@ export class TasksService {
     };
 
     return this.http
-      .put<Task>(`${environment.baseUrl}/tasks/${task.id}/`, payload, { withCredentials: true })
+      .patch<Task>(`${environment.baseUrl}/tasks/${task.id}/`, payload, {
+        withCredentials: true,
+      })
       .pipe(
         catchError((error) => {
           this.errorService.showError('Something went wrong updating the task');
@@ -136,11 +150,14 @@ export class TasksService {
   // ======================
   // DELETE
   // ======================
+
   deleteTask(taskId: number) {
     const prevTasks = this.tasks();
 
     return this.http
-      .delete<void>(`${environment.baseUrl}/tasks/${taskId}/`, { withCredentials: true })
+      .delete<void>(`${environment.baseUrl}/tasks/${taskId}/`, {
+        withCredentials: true,
+      })
       .pipe(
         tap({
           next: () => {
@@ -162,7 +179,7 @@ export class TasksService {
   }
 
   // ======================
-  // STATUS UPDATE (PATCH)
+  // STATUS UPDATE (PATCH само status)
   // ======================
 
   /**
@@ -188,7 +205,10 @@ export class TasksService {
   /**
    * Updates the task status locally (optimistic update).
    */
-  private applyOptimisticStatusUpdate(taskId: number, status: TaskStatus): void {
+  private applyOptimisticStatusUpdate(
+    taskId: number,
+    status: TaskStatus
+  ): void {
     this.tasks.update((oldTasks) =>
       oldTasks.map((task) =>
         task.id === taskId ? { ...task, status } : task
@@ -212,11 +232,18 @@ export class TasksService {
    */
   private applyServerStatusResponse(updatedTask: Task): void {
     this.tasks.update((oldTasks) =>
-      oldTasks.map((task) =>
-        task.id === updatedTask.id ? updatedTask : task
-      )
+      oldTasks.map((task) => {
+        if (task.id !== updatedTask.id) {
+          return task;
+        }
+        return {
+          ...task,
+          status: updatedTask.status,
+        };
+      })
     );
   }
+
 
   /**
    * Handles errors for status updates: rollback & user-facing error.
@@ -229,5 +256,51 @@ export class TasksService {
     return throwError(
       () => new Error('Something went wrong updating task status')
     );
+  }
+
+  // ======================
+  // SUBTASK STATUS (PATCH)
+  // ======================
+
+  updateSubtaskStatus(taskId: number, subtaskId: number, status: boolean) {
+    const prevTasks = this.tasks();
+
+    // optimistic update
+    this.tasks.update((oldTasks) =>
+      oldTasks.map((task) => {
+        if (task.id !== taskId || !task.subtasks) return task;
+
+        const updatedSubtasks = task.subtasks.map((sub) =>
+          sub.id === subtaskId ? { ...sub, status } : sub
+        );
+
+        const completedCount = updatedSubtasks.filter(
+          (sub) => sub.status === true
+        ).length;
+
+        return {
+          ...task,
+          subtasks: updatedSubtasks,
+        };
+      })
+    );
+
+    return this.http
+      .patch(
+        `${environment.baseUrl}/subtask/${subtaskId}/`,
+        { status },
+        { withCredentials: true }
+      )
+      .pipe(
+        catchError((error) => {
+          this.tasks.set(prevTasks);
+          this.errorService.showError(
+            'Something went wrong updating the subtask'
+          );
+          return throwError(
+            () => new Error('Something went wrong updating the subtask')
+          );
+        })
+      );
   }
 }

@@ -36,19 +36,28 @@ export class TaskCardComponent {
     return tasks.find((t) => t.id === id) ?? null;
   });
 
-  progressPercent = computed(() => {
+  completedSubtasks = computed(() => {
     const t = this.task();
     if (!t || !t.subtasks || t.subtasks.length === 0) return 0;
-    if (!t.subtasks_progress || t.subtasks_progress < 0) return 0;
+    return t.subtasks.filter((s) => s.status === true).length;
+  });
 
-    return (t.subtasks_progress / t.subtasks.length) * 100;
+  progressPercent = computed(() => {
+    const t = this.task();
+    const total = t?.subtasks?.length ?? 0;
+    const done = this.completedSubtasks();
+    if (!t || total === 0) return 0;
+    return (done / total) * 100;
   });
 
   progressLabel = computed(() => {
     const t = this.task();
-    if (!t || !t.subtasks || t.subtasks.length === 0) return 'No subtasks';
-    return `${t.subtasks_progress}/${t.subtasks.length} Subtasks`;
+    const total = t?.subtasks?.length ?? 0;
+    const done = this.completedSubtasks();
+    if (!t || total === 0) return 'No subtasks';
+    return `${done}/${total} Subtasks`;
   });
+
 
   priorityIcon = computed(() => {
     const t = this.task();

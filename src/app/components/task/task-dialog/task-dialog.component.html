@@ -1,0 +1,140 @@
+<div class="task-dialog-overlay" (click)="onOverlayClick($event)">
+    @if (task(); as t) {
+    <div class="task-dialog" (click)="$event.stopPropagation()">
+        <!-- HEADER -->
+        <div class="task-dialog-header">
+            <button class="category-pill">
+                {{ t.category }}
+            </button>
+
+            <button class="close-btn" type="button" (click)="onCloseClick()">
+                ✕
+            </button>
+        </div>
+
+        <!-- VIEW MODE -->
+        @if (mode() === 'view') {
+        <div class="task-dialog-body">
+            <h2 class="task-title">{{ t.title }}</h2>
+            <p class="task-description">
+                {{ t.description }}
+            </p>
+
+            <div class="task-row">
+                <span class="label">Due date:</span>
+                <span class="value">{{ t.due_date }}</span>
+            </div>
+
+            <div class="task-row">
+                <span class="label">Priority:</span>
+                <span class="value prio">
+                    {{ priorityLabel(t.priority) }}
+                </span>
+            </div>
+
+            <div class="task-section">
+                <p class="section-title">Assigned to:</p>
+                <div class="assigned-list">
+                    @for (member of t.members; track member.id) {
+                    <div class="assigned-item">
+                        <div class="avatar" [style.background-color]="member.color">
+                            {{
+                            member.user.first_name.charAt(0) +
+                            member.user.last_name.charAt(0)
+                            }}
+                        </div>
+                        <span class="name">
+                            {{ member.user.first_name }} {{ member.user.last_name }}
+                        </span>
+                    </div>
+                    }
+                </div>
+            </div>
+
+            <div class="task-section">
+                <p class="section-title">Subtasks:</p>
+                <div class="subtasks-list">
+                    @if (!t.subtasks || !t.subtasks.length) {
+                    <span class="no-subtasks">No subtasks</span>
+                    } @else {
+                    @for (sub of t.subtasks; track sub.id) {
+                    <div class="subtask-item">
+                        <input type="checkbox" (change)="onToggleSubtask(sub.id!, $any($event.target).checked)"
+                            [checked]="sub.status === true" />
+                        <span>{{ sub.title }}</span>
+                    </div>
+                    }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER (VIEW) -->
+        <div class="task-dialog-footer">
+            <button type="button" class="delete-btn" (click)="deleteTask()">
+                Delete
+            </button>
+            <button type="button" class="edit-btn" (click)="enterEditMode()">
+                Edit
+            </button>
+        </div>
+        }
+
+        <!-- EDIT MODE -->
+        @if (mode() === 'edit') {
+        <form class="task-dialog-body" [formGroup]="form" (ngSubmit)="saveChanges()">
+            <div class="form-field">
+                <label for="title">Title</label>
+                <input id="title" type="text" formControlName="title" />
+            </div>
+
+            <div class="form-field">
+                <label for="description">Description</label>
+                <textarea id="description" rows="4" formControlName="description"></textarea>
+            </div>
+
+            <div class="form-field">
+                <label for="due_date">Due date</label>
+                <input id="due_date" type="date" formControlName="due_date" />
+            </div>
+
+            <div class="form-field">
+                <label>Priority</label>
+                <div class="prio-buttons">
+                    <button type="button" [class.prio-high]="isPriority('high')" (click)="setPriority('high')">
+                        Urgent
+                    </button>
+                    <button type="button" [class.prio-medium]="isPriority('medium')" (click)="setPriority('medium')">
+                        Medium
+                    </button>
+                    <button type="button" [class.prio-low]="isPriority('low')" (click)="setPriority('low')">
+                        Low
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-field edit-members">
+                <label>Assign to:</label>
+
+                <select multiple [formControl]="form.controls.members">
+                    @for (user of allUsers(); track user.id) {
+                    <option [value]="user.id">
+                        {{ user.user.first_name }} {{ user.user.last_name }}
+                    </option>
+                    }
+                </select>
+            </div>
+
+            <div class="task-dialog-footer">
+                <button type="button" class="cancel-btn" (click)="cancelEdit()">
+                    Cancel
+                </button>
+                <button type="submit" class="save-btn" [disabled]="form.invalid">
+                    Save
+                </button>
+            </div>
+        </form>
+        }
+    </div>
+    }
+</div>
