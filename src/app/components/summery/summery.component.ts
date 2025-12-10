@@ -1,11 +1,12 @@
 import { Component, computed, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { TasksService } from '../../services/tasks/tasks.service';
 import { DatePipe } from '@angular/common';
 import { AuthService } from '../auth/auth.service';
 @Component({
   selector: 'app-summery',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, RouterLink],
   templateUrl: './summery.component.html',
   styleUrl: './summery.component.scss'
 })

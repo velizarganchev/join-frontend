@@ -8,7 +8,7 @@
     <div class="summary-box">
         <div class="summary-content">
             <div class="summary-top">
-                <a href="board.html" class="summary-top-item">
+                <a routerLink="/board" class="summary-top-item">
                     <div class="summary-top-item-image">
                         <img src="/assets/img/to-do-icon-white.png">
                     </div>
@@ -17,7 +17,7 @@
                         <h5>To-do</h5>
                     </div>
                 </a>
-                <a href="board.html" class="summary-top-item">
+                <a routerLink="/board" class="summary-top-item">
                     <div class="summary-top-item-image">
                         <img src="/assets/img/hook-icon-white.png">
                     </div>
@@ -27,7 +27,7 @@
                     </div>
                 </a>
             </div>
-            <a href="#" class="summary-middle">
+            <a routerLink="/board" class="summary-middle">
                 <div class="upcoming-task">
                     <div class="upcoming-task-img-container">
                         <img src="/assets/img/PrioHighWhite.png">
@@ -44,15 +44,15 @@
                 </div>
             </a>
             <div class="summary-bottom">
-                <a href="#">
+                <a routerLink="/board">
                     <h4 id="tasks-amount">{{ totalCount() }}</h4>
                     <h5>Tasks in <br> board</h5>
                 </a>
-                <a href="#">
+                <a routerLink="/board">
                     <h4 id="in-progress-amount">{{ inProgressCount() }}</h4>
                     <h5>Tasks in <br> progress</h5>
                 </a>
-                <a href="#">
+                <a routerLink="/board">
                     <h4 id="awaiting-feedback-amount">{{ awaitingCount() }}</h4>
                     <h5>Awaiting <br> feedback</h5>
                 </a>
