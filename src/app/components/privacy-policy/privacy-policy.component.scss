@@ -1,0 +1,107 @@
+@import '../../../styles.scss';
+
+.privacy-page {
+    min-height: 100vh;
+    padding: 32px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f5f5f5;
+}
+
+/* Header aligned visually с картата отдолу */
+.privacy-header {
+    width: 100%;
+    max-width: 960px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+
+    h1 {
+        margin: 0;
+        font-family: 'Inter', sans-serif;
+        font-size: 48px;
+        line-height: 1.2;
+        font-weight: 700;
+        color: #000;
+    }
+}
+
+/* Back button – същият стил като в Legal Notice */
+.back-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition:
+        background-color 120ms ease-in-out,
+        transform 120ms ease-in-out;
+
+    .back-icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    &:hover {
+        background-color: #e7e7e7;
+        transform: translateX(-1px);
+    }
+}
+
+/* Основната „карта“ – същия vibe като Legal Notice */
+.privacy-card {
+    width: 100%;
+    max-width: 960px;
+    background-color: #ffffff;
+    border-radius: 24px;
+    padding: 32px 40px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+
+    h3 {
+        margin-top: 24px;
+        margin-bottom: 8px;
+        font-size: 20px;
+        font-weight: 700;
+        color: #2a3647;
+    }
+
+    .privacy-date {
+        margin-top: 0;
+    }
+
+    p {
+        margin: 0 0 12px;
+        font-size: 16px;
+        line-height: 1.5;
+        color: #42526e;
+    }
+
+    a {
+        color: #0d99ff;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+/* Mobile tweaks */
+@media (max-width: 768px) {
+    .privacy-header {
+        h1 {
+            font-size: 36px;
+        }
+    }
+
+    .privacy-card {
+        padding: 24px 20px;
+    }
+}

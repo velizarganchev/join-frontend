@@ -8,6 +8,7 @@ import { HomeComponent } from './components/home/home.component';
 import { SignupComponent } from './components/auth/signup/signup.component';
 import { LegalNoticeComponent } from './components/legal-notice/legal-notice.component';
 import { NotFoundComponent } from './components/shared/not-found/not-found.component';
+import { PrivacyPolicyComponent } from './components/privacy-policy/privacy-policy.component';
 
 
 
@@ -43,6 +44,7 @@ export const routes: Routes = [
         canMatch: [authGuard]
     },
     { path: 'legal-notice', component: LegalNoticeComponent },
+    { path: 'privacy-policy', component: PrivacyPolicyComponent },
     {
         path: '**',
         component: NotFoundComponent

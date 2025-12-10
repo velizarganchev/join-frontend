@@ -1,23 +1,30 @@
 <section>
     <div class="left-section">
         <div class="action-container">
-            <button class="add-contact-btn">
+            <button class="add-contact-btn" type="button" (click)="onAddContact()">
                 <span>Add new contact</span>
-                <img src="/assets/img/add-contact.png" alt="Add Contact">
+                <img src="/assets/img/add-contact.png" alt="Add Contact" />
             </button>
         </div>
+
         <ul class="contacts-container">
-            @for (key of sortedMemberKeys; track $index) {
+            @for (group of groups(); track group.letter) {
             <li class="contact-item">
-                <div class="contact-leter">{{ key }}</div>
+                <div class="contact-letter">{{ group.letter }}</div>
+
                 <ul class="contacts">
-                    @for (contact of members()[key]; track $index) {
-                    <li class="contact" (click)="onSelectContact(contact)">
-                        <div class="badge" [style.background-color]="contact.color">{{ contact.user.first_name.charAt(0)
-                            }}{{
-                            contact.user.last_name.charAt(0) }}</div>
+                    @for (contact of group.members; track contact.id) {
+                    <li class="contact" [class.contact--selected]="selectedContact()?.id === contact.id"
+                        (click)="onSelectContact(contact)">
+                        <div class="badge" [style.background-color]="contact.color">
+                            {{ contact.user.first_name.charAt(0) }}{{
+                            contact.user.last_name.charAt(0) }}
+                        </div>
+
                         <div class="name-container">
-                            <p class="name">{{ contact.user.first_name }} {{ contact.user.last_name }}</p>
+                            <p class="name">
+                                {{ contact.user.first_name }} {{ contact.user.last_name }}
+                            </p>
                             <p class="email">{{ contact.user.email }}</p>
                         </div>
                     </li>
@@ -27,6 +34,7 @@
             }
         </ul>
     </div>
+
     <div class="right-section">
         <header class="contact-headline">
             <h2>Contacts</h2>
@@ -34,27 +42,44 @@
             <h3>Better with a team</h3>
             <div class="mobile-headline-border"></div>
         </header>
-        @if (selectedContact) {
+
+        @if (selectedContact(); as contact) {
         <div class="contact-info-container">
+            <!-- тук можеш да добавиш бутон "Edit" -->
             <div class="contact-info-headline">
-                <div class="headline-badge" [style.background-color]="selectedContact.color">{{
-                    selectedContact.user.first_name.charAt(0) }}{{
-                    selectedContact.user.last_name.charAt(0) }}</div>
+                <div class="headline-badge" [style.background-color]="contact.color">
+                    {{ contact.user.first_name.charAt(0) }}{{
+                    contact.user.last_name.charAt(0) }}
+                </div>
                 <div class="headline-name-container">
-                    <p class="headline-name">{{ selectedContact.user.first_name }} {{ selectedContact.user.last_name }}
+                    <p class="headline-name">
+                        {{ contact.user.first_name }} {{ contact.user.last_name }}
                     </p>
                 </div>
             </div>
+
             <div class="subheadline">Contact Information</div>
+
             <div class="contact-info-email">
                 <p class="info-email-title">Email</p>
-                <p class="info-email">{{ selectedContact.user.email }}</p>
+                <p class="info-email">{{ contact.user.email }}</p>
             </div>
+
             <div class="contact-info-phone">
                 <p class="info-phone-title">Phone</p>
-                <p class="info-phone">{{ selectedContact.phone_number }}</p>
+                <p class="info-phone">{{ contact.phone_number }}</p>
             </div>
+
+            <button type="button" class="edit-contact-btn" (click)="onEditSelectedContact()">
+                Edit contact
+            </button>
         </div>
         }
     </div>
+
+    <!-- TODO: тук ще закачиш диалога за Add/Edit -->
+    <!-- @if (isContactDialogOpen()) {
+    <app-contact-dialog [contact]="editingContact()" (saved)="onContactSaved($event)"
+        (deleted)="onContactDeleted($event)" (close)="onCloseDialog()" />
+    } -->
 </section>

@@ -1,4 +1,4 @@
-@import "../../../styles.scss";
+@import '../../../styles.scss';
 
 section {
     display: flex;
@@ -12,14 +12,17 @@ section {
         width: 30%;
         height: 85vh;
         box-shadow: 4px 0 6px 0 rgba(0, 0, 0, 0.08);
+        background-color: #fff;
+        display: flex;
+        flex-direction: column;
 
         .action-container {
-            margin-top: 1rem;
+            padding: 1rem 0;
             display: flex;
             justify-content: center;
             align-items: center;
 
-            button {
+            .add-contact-btn {
                 width: 80%;
                 padding: 1rem;
                 display: flex;
@@ -30,10 +33,11 @@ section {
                 border: 1px solid #2a3647;
                 border-radius: 10px;
                 box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
+                cursor: pointer;
 
                 span {
                     font-size: 1rem;
-                    color: white;
+                    color: #fff;
                 }
 
                 img {
@@ -41,7 +45,6 @@ section {
                 }
 
                 &:hover {
-                    cursor: pointer;
                     border: 1px solid #29abe2;
                     background-color: #29abe2;
                 }
@@ -49,82 +52,105 @@ section {
         }
 
         .contacts-container {
-            height: 75%;
-            overflow-y: scroll;
+            flex: 1;
+            margin: 0;
+            padding: 0.5rem 0;
+            overflow-y: auto;
             list-style: none;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            align-items: flex-start;
+            align-items: stretch;
+            gap: 0.75rem;
             @include scrollbar();
 
             .contact-item {
-                width: calc(100% - 1rem);
+                width: 100%;
                 display: flex;
                 flex-direction: column;
 
-                .contact-leter {
-                    padding: 1rem !important;
-                    margin: 0;
-                    padding: 1rem;
+                .contact-letter {
+                    padding: 0.75rem 1rem;
                     border-bottom: 1px solid #d1d1d1;
+                    font-weight: 600;
                 }
 
                 .contacts {
                     list-style: none;
                     padding: 0;
+                    margin: 0;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.5rem;
 
                     .contact {
-                        margin-top: 0.9rem;
-                        padding: 0.9rem;
-                        border-radius: 10px;
-                        overflow-x: hidden;
+                        padding: 0.75rem 1rem;
                         display: flex;
-                        flex-direction: row;
-                        justify-content: center;
                         align-items: center;
-                        gap: 0.9rem;
+                        gap: 0.75rem;
+                        border-radius: 10px;
                         cursor: pointer;
+                        transition:
+                            background-color 120ms ease-in-out,
+                            transform 80ms ease-in-out;
 
                         &:hover {
                             background-color: #edebeb;
-                            border-radius: 10px;
+                            transform: translateY(-1px);
+                        }
+
+                        &.contact--selected {
+                            background-color: #2a3647;
+                            color: #fff;
+
+                            .email {
+                                color: #cfe8ff;
+                            }
                         }
 
                         .badge {
+                            /* perfect circle, независимо от текста */
+                            flex: 0 0 40px;
+                            width: 40px;
+                            height: 40px;
+                            border-radius: 50%;
                             display: flex;
                             align-items: center;
                             justify-content: center;
-                            color: white;
+                            color: #fff;
                             background-color: #29abe2;
-                            padding: 0.7rem;
-                            border-radius: 100%;
-                            border: 1px solid white;
+                            border: 2px solid #fff;
+                            font-weight: 600;
+                            text-transform: uppercase;
+                            font-size: 0.9rem;
                         }
 
                         .name-container {
-                            display: flex;
-                            flex-direction: column;
-                            align-items: flex-start;
-                            gap: 0.4rem;
+                            flex: 1 1 auto;
+                            min-width: 0;
+                            /* важно за ellipsis */
 
                             .name {
                                 margin: 0;
-                                font-size: 1.1rem;
+                                font-size: 1.05rem;
+                                font-weight: 500;
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
                             }
 
                             .email {
                                 margin: 0;
                                 font-size: 0.9rem;
                                 color: #29abe2;
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
                             }
                         }
                     }
                 }
             }
         }
-
-
     }
 
     .right-section {
@@ -154,7 +180,7 @@ section {
             }
 
             .headline-border {
-                border: 2px solid #29ABE2;
+                border: 2px solid #29abe2;
                 height: 70%;
                 border-radius: 10px;
             }
@@ -177,12 +203,14 @@ section {
                 .headline-badge {
                     width: 4rem;
                     height: 4rem;
-                    border-radius: 100%;
+                    border-radius: 50%;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    background-color: #29ABE2;
-                    color: white;
+                    background-color: #29abe2;
+                    color: #fff;
+                    font-size: 1.4rem;
+                    font-weight: 600;
                 }
 
                 .headline-name-container {
@@ -190,32 +218,29 @@ section {
                 }
             }
 
-            .contact-info-email {
+            .edit-contact-btn {
+                margin-top: 24px;
+                width: 220px;
+                height: 48px;
+                border: none;
+                border-radius: 10px;
+                background-color: #2a3647;
+                color: #fff;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.15);
+                transition: background-color 120ms ease, transform 120ms ease;
 
-                .info-email-title {
-                    font-size: 1rem;
-                    font-weight: 700;
+                &:hover {
+                    background-color: #0d99ff;
+                    transform: translateY(-1px);
                 }
 
-                .info-email {
-                    font-size: 1rem;
-                    color: #29ABE2;
-                }
-            }
-
-            .contact-info-phone {
-
-                .info-phone-title {
-                    font-size: 1rem;
-                    font-weight: 700;
-                }
-
-                .info-phone {
-                    font-size: 1rem;
-
+                &:active {
+                    transform: translateY(0);
                 }
             }
         }
-
     }
 }
