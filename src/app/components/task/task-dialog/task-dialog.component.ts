@@ -23,16 +23,20 @@ import { ContactsService } from '../../../services/contacts/contacts.service';
   styleUrl: './task-dialog.component.scss',
 })
 export class TaskDialogComponent {
+  private readonly tasksService = inject(TasksService);
+  private readonly contactsService = inject(ContactsService);
+  private readonly fb = inject(FormBuilder);
+
   taskId = input.required<number>();
+
   allUsers = signal<Member[]>([]);
+  selectedMembers = signal<Member[]>([]);
+  dropdownOpen = signal(false);
+  confirmDelete = signal(false);
 
   close = output<void>();
   deleted = output<void>();
   updated = output<void>();
-
-  private readonly tasksService = inject(TasksService);
-  private readonly contactsService = inject(ContactsService);
-  private readonly fb = inject(FormBuilder);
 
   mode = signal<'view' | 'edit'>('view');
 
@@ -75,6 +79,12 @@ export class TaskDialogComponent {
         priority: t.priority as 'low' | 'medium' | 'high',
         members: t.members.map(member => member.id),
       });
+    });
+
+    effect(() => {
+      const ids = this.form.controls.members.value ?? [];
+      const all = this.allUsers();
+      this.selectedMembers.set(all.filter((u) => ids.includes(u.id)));
     });
   }
 
@@ -150,19 +160,31 @@ export class TaskDialogComponent {
 
 
   /** Delete */
-  deleteTask() {
+
+  askDelete() {
+    this.confirmDelete.set(true);
+  }
+
+  cancelDeleteConfirm() {
+    this.confirmDelete.set(false);
+  }
+
+  confirmDeleteTask() {
     const t = this.task();
     if (!t || t.id == null) return;
 
     this.tasksService.deleteTask(t.id).subscribe({
       next: () => {
+        this.confirmDelete.set(false);
         this.deleted.emit();
       },
       error: (err) => {
         console.error('Error deleting task', err);
+        this.confirmDelete.set(false);
       },
     });
   }
+
 
   setPriority(level: 'low' | 'medium' | 'high') {
     this.form.patchValue({ priority: level });
@@ -172,6 +194,24 @@ export class TaskDialogComponent {
     return this.form.value.priority === level;
   }
 
+  toggleDropdown() {
+    this.dropdownOpen.update((open) => !open);
+  }
+
+  toggleMember(id: number, checked: boolean) {
+    const current = [...(this.form.controls.members.value ?? [])];
+
+    if (checked && !current.includes(id)) {
+      current.push(id);
+    } else if (!checked) {
+      const idx = current.indexOf(id);
+      if (idx > -1) {
+        current.splice(idx, 1);
+      }
+    }
+
+    this.form.controls.members.setValue(current);
+  }
 
   /** Close dialog */
   onOverlayClick(event: MouseEvent) {

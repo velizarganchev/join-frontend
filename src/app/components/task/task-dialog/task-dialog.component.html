@@ -70,14 +70,34 @@
         </div>
 
         <!-- FOOTER (VIEW) -->
+        @if (!confirmDelete()) {
         <div class="task-dialog-footer">
-            <button type="button" class="delete-btn" (click)="deleteTask()">
+            <button type="button" class="delete-btn" (click)="askDelete()">
                 Delete
             </button>
             <button type="button" class="edit-btn" (click)="enterEditMode()">
                 Edit
             </button>
         </div>
+        }
+        @if (confirmDelete()) {
+        <div class="task-dialog-footer confirm-delete">
+            <span class="confirm-text">
+                Are you sure you want to delete this task?
+            </span>
+
+            <div class="confirm-actions">
+                <button type="button" class="cancel-btn" (click)="cancelDeleteConfirm()">
+                    Cancel
+                </button>
+                <button type="button" class="delete-btn" (click)="confirmDeleteTask()">
+                    Delete
+                </button>
+            </div>
+        </div>
+        }
+
+
         }
 
         <!-- EDIT MODE -->
@@ -116,13 +136,29 @@
             <div class="form-field edit-members">
                 <label>Assign to:</label>
 
-                <select multiple [formControl]="form.controls.members">
-                    @for (user of allUsers(); track user.id) {
-                    <option [value]="user.id">
-                        {{ user.user.first_name }} {{ user.user.last_name }}
-                    </option>
+                <div class="multiselect" [class.open]="dropdownOpen()">
+                    <div class="selected-tags" (click)="toggleDropdown()">
+                        @for (user of selectedMembers(); track user.id) {
+                        <span class="tag">
+                            {{ user.user.first_name }} {{ user.user.last_name }}
+                        </span>
+                        }
+                        @if (selectedMembers().length === 0) {
+                        <span class="placeholder">Select members...</span>
+                        }
+                    </div>
+                    @if (dropdownOpen()) {
+                    <div class="dropdown" (click)="$event.stopPropagation()">
+                        @for (user of allUsers(); track user.id) {
+                        <label class="dropdown-item">
+                            <input type="checkbox" [checked]="form.value.members?.includes(user.id)"
+                                (change)="toggleMember(user.id, $any($event.target).checked)" />
+                            {{ user.user.first_name }} {{ user.user.last_name }}
+                        </label>
+                        }
+                    </div>
                     }
-                </select>
+                </div>
             </div>
 
             <div class="task-dialog-footer">

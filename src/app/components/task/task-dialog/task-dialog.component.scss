@@ -170,7 +170,6 @@
     color: #fff;
 }
 
-/* общ стил за полетата във формата */
 .form-field {
     display: flex;
     flex-direction: column;
@@ -200,7 +199,6 @@
     }
 }
 
-/* priority бутони */
 .prio-buttons {
     display: flex;
     gap: 8px;
@@ -235,33 +233,92 @@
     }
 }
 
-/* ASSIGN TO: multi select */
+// Member multi-select styles
 .edit-members {
-    select {
-        width: 100%;
-        min-height: 80px;
-        max-height: 140px;
-        padding: 6px 10px;
-        border-radius: 8px;
-        border: 1px solid #d1d1d1;
-        background-color: #fff;
-        outline: none;
-        overflow-y: auto;
-        cursor: default;
+    position: relative;
+}
+
+.multiselect {
+    position: relative;
+    border: 1px solid #d1d1d1;
+    border-radius: 8px;
+    padding: 6px 8px;
+    background: #fff;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+
+    &.open {
+        border-color: #0d99ff;
+        box-shadow: 0 0 0 2px rgba(13, 153, 255, 0.15);
+    }
+}
+
+.selected-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 24px;
+
+    .tag {
+        background: #2a3647;
+        color: #fff;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        line-height: 1.4;
     }
 
-    select[multiple] {
-        /* махаме default синьото от някои браузъри */
-        background-image: none;
+    .placeholder {
+        color: #909090;
+        font-size: 14px;
+    }
+}
+
+.dropdown {
+    position: absolute;
+    left: 0;
+    top: calc(100% + 4px);
+    width: 100%;
+    max-height: 220px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #d1d1d1;
+    border-radius: 8px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    z-index: 20;
+    padding: 6px 0;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    font-size: 14px;
+    cursor: pointer;
+
+    input {
+        cursor: pointer;
     }
 
-    option {
-        padding: 4px 6px;
+    &:hover {
+        background: #f4f4f4;
+    }
+}
+
+.confirm-delete {
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+
+    .confirm-text {
+        color: #ff3d00;
+        font-weight: 600;
         font-size: 14px;
     }
 
-    option:checked {
-        background-color: #0d99ff;
-        color: #fff;
+    .confirm-actions {
+        display: flex;
+        gap: 8px;
     }
 }
