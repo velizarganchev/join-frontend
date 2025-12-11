@@ -11,6 +11,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { ContactsService } from '../../services/contacts/contacts.service';
 import { Member } from '../../models/member';
+import { AddContactDialogComponent } from "./add-contact-dialog/add-contact-dialog.component";
 
 interface ContactGroup {
   letter: string;
@@ -20,7 +21,7 @@ interface ContactGroup {
 @Component({
   selector: 'app-contacts',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AddContactDialogComponent],
   templateUrl: './contacts.component.html',
   styleUrl: './contacts.component.scss',
 })
@@ -46,7 +47,7 @@ export class ContactsComponent implements OnInit {
   }
 
   /** Load contacts from backend and build groups */
-  private loadContacts() {
+  loadContacts() {
     this.isFetching.set(true);
 
     this.contactsService
@@ -102,49 +103,21 @@ export class ContactsComponent implements OnInit {
   }
 
   /** Click on "Add new contact" */
-  onAddContact() {
+  openAddDialog() {
     this.editingContact.set(null); // create mode
     this.isContactDialogOpen.set(true);
   }
 
   /** Click on "Edit" (например бутон до детайлите) */
   onEditSelectedContact() {
-    const contact = this.selectedContact();
-    if (!contact) return;
+    // const contact = this.selectedContact();
+    // if (!contact) return;
 
-    this.editingContact.set(contact);
-    this.isContactDialogOpen.set(true);
+    // this.editingContact.set(contact);
+    // this.isContactDialogOpen.set(true);
   }
 
-  /** Called when dialog saves contact (create or update) */
-  onContactSaved(saved: Member) {
-    const flat = this.flattenMembers();
-    const index = flat.findIndex((m) => m.id === saved.id);
-
-    if (index === -1) {
-      flat.push(saved); // newly created
-    } else {
-      flat[index] = saved; // updated
-    }
-
-    this.groups.set(this.buildGroups(flat));
-    this.selectedContact.set(saved);
-    this.isContactDialogOpen.set(false);
-  }
-
-  /** Called when dialog deletes a contact */
-  onContactDeleted(deletedId: number) {
-    const flat = this.flattenMembers().filter((m) => m.id !== deletedId);
-    this.groups.set(this.buildGroups(flat));
-
-    if (this.selectedContact()?.id === deletedId) {
-      this.selectedContact.set(null);
-    }
-
-    this.isContactDialogOpen.set(false);
-  }
-
-  onCloseDialog() {
+  closeAddDialog() {
     this.isContactDialogOpen.set(false);
   }
 }

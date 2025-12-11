@@ -1,7 +1,7 @@
 <section>
     <div class="left-section">
         <div class="action-container">
-            <button class="add-contact-btn" type="button" (click)="onAddContact()">
+            <button class="add-contact-btn" type="button" (click)="openAddDialog()">
                 <span>Add new contact</span>
                 <img src="/assets/img/add-contact.png" alt="Add Contact" />
             </button>
@@ -78,8 +78,7 @@
     </div>
 
     <!-- TODO: тук ще закачиш диалога за Add/Edit -->
-    <!-- @if (isContactDialogOpen()) {
-    <app-contact-dialog [contact]="editingContact()" (saved)="onContactSaved($event)"
-        (deleted)="onContactDeleted($event)" (close)="onCloseDialog()" />
-    } -->
+    @if (isContactDialogOpen()) {
+    <app-add-contact-dialog (close)="closeAddDialog()" (created)="loadContacts()" />
+    }
 </section>
